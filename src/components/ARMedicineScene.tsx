@@ -1,93 +1,87 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {StyleSheet} from 'react-native';
-import {
-  ViroARScene,
-  ViroARImageMarker,
-  ViroARTrackingTargets,
-  Viro3DObject,
-  ViroText,
-  ViroNode,
-  ViroAmbientLight,
-  ViroSpotLight,
-  ViroAnimations,
-} from '@reactvision/react-viro';
-import {MEDICINES} from '../constants/medicines';
+import React, {useEffect, useRef} from 'react';
+import {View, Text, StyleSheet, Animated, Easing} from 'react-native';
+import {Colors} from '../constants/colors';
 import {Strings} from '../constants/strings';
-import {getNextDoseInfo} from '../utils/timeUtils';
-import {formatTime24to12} from '../utils/timeUtils';
+import {MEDICINES} from '../constants/medicines';
+import {getNextDoseInfo, formatTime24to12} from '../utils/timeUtils';
 import {speak} from '../services/ttsService';
+import {Model3DViewer} from './Model3DViewer';
 
-// İlaç görselleri - AR hedef olarak
-const targetImages: Record<string, any> = {
-  neoral: require('../assets/ilac/ilaç 1.png'),
-  deltacortril: require('../assets/ilac/ilaç 2.png'),
+const MODEL_FILES: Record<string, 'ilac1.glb' | 'ilac2.glb'> = {
+  neoral: 'ilac1.glb',
+  deltacortril: 'ilac2.glb',
 };
-
-// 3D modeller
-const models: Record<string, any> = {
-  neoral: require('../assets/3D Model/ilaç 1.glb'),
-  deltacortril: require('../assets/3D Model/ilaç 2.glb'),
-};
-
-// AR hedef görüntüleri kaydet
-ViroARTrackingTargets.createTargets({
-  neoralTarget: {
-    source: targetImages.neoral,
-    orientation: 'Up',
-    physicalWidth: 0.12, // ~12cm kutu genişliği
-  },
-  deltacortrilTarget: {
-    source: targetImages.deltacortril,
-    orientation: 'Up',
-    physicalWidth: 0.08, // ~8cm kutu genişliği
-  },
-});
-
-// Animasyonlar
-ViroAnimations.registerAnimations({
-  scaleUp: {
-    properties: {scaleX: 1, scaleY: 1, scaleZ: 1},
-    duration: 500,
-    easing: 'EaseInEaseOut',
-  },
-  rotate: {
-    properties: {rotateY: '+=360'},
-    duration: 4000,
-  },
-  floatUp: {
-    properties: {positionY: 0.15},
-    duration: 1000,
-    easing: 'EaseInEaseOut',
-  },
-  appear: [['scaleUp', 'floatUp']] as any,
-});
 
 interface Props {
+  medicineId: string;
   times: Record<string, string[]>;
-  onMedicineDetected?: (medicineId: string) => void;
 }
 
-export function ARMedicineScene({times, onMedicineDetected}: Props) {
-  const [detectedMedicine, setDetectedMedicine] = useState<string | null>(null);
-  const spokenRef = useRef<Set<string>>(new Set());
+export function ARMedicineOverlay({medicineId, times}: Props) {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const cardSlideAnim = useRef(new Animated.Value(50)).current;
+  const cardOpacityAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0.3)).current;
+  const spokenRef = useRef(false);
 
-  const handleAnchorFound = (medicineId: string) => {
-    setDetectedMedicine(medicineId);
-    onMedicineDetected?.(medicineId);
+  const medicine = MEDICINES.find(m => m.id === medicineId);
+  if (!medicine) {
+    return null;
+  }
 
-    // Aynı ilaç için tekrar konuşma
-    if (!spokenRef.current.has(medicineId)) {
-      spokenRef.current.add(medicineId);
+  const medicineTimes = times[medicineId] || medicine.defaultTimes;
+  const countdown = getNextDoseInfo(medicineTimes);
+  const nextTimeFormatted = formatTime24to12(countdown.nextTime);
 
-      const medicine = MEDICINES.find(m => m.id === medicineId);
-      if (medicine) {
-        const medicineTimes = times[medicineId] || medicine.defaultTimes;
-        const countdown = getNextDoseInfo(medicineTimes);
+  useEffect(() => {
+    // 3D model giriş animasyonu
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 6,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
 
+    // Bilgi kartı animasyonu (gecikmiş)
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(cardSlideAnim, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(cardOpacityAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 300);
+
+    // Glow pulse animasyonu
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 0.7,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+
+    // Sesli bildirim
+    if (!spokenRef.current) {
+      spokenRef.current = true;
+      setTimeout(() => {
         if (countdown.isOverdue) {
           speak(Strings.tts.overdueSpeech(medicine.name));
         } else {
-          const nextTimeFormatted = formatTime24to12(countdown.nextTime);
           speak(
             Strings.tts.medicineSpeech(
               medicine.name,
@@ -97,86 +91,211 @@ export function ARMedicineScene({times, onMedicineDetected}: Props) {
             ),
           );
         }
-      }
+      }, 600);
     }
-
-    // 10 saniye sonra tekrar konuşabilsin
-    setTimeout(() => {
-      spokenRef.current.delete(medicineId);
-    }, 10000);
-  };
-
-  const handleAnchorRemoved = () => {
-    setDetectedMedicine(null);
-  };
-
-  const renderMedicineAR = (medicineId: string, targetName: string) => {
-    const medicine = MEDICINES.find(m => m.id === medicineId);
-    if (!medicine) {return null;}
-
-    const medicineTimes = times[medicineId] || medicine.defaultTimes;
-    const countdown = getNextDoseInfo(medicineTimes);
-    const nextTimeFormatted = formatTime24to12(countdown.nextTime);
-
-    const infoText = countdown.isOverdue
-      ? `${medicine.name}\nZAMANI GEÇTİ!`
-      : `${medicine.name}\n${Strings.ar.nextDoseAt}: ${nextTimeFormatted}\n${countdown.hours}sa ${countdown.minutes}dk ${Strings.ar.timeRemaining}`;
-
-    return (
-      <ViroARImageMarker
-        target={targetName}
-        onAnchorFound={() => handleAnchorFound(medicineId)}
-        onAnchorRemoved={handleAnchorRemoved}>
-        {/* 3D Model */}
-        <ViroNode position={[0, 0.05, 0]} scale={[0, 0, 0]} animation={{name: 'appear', run: true}}>
-          <Viro3DObject
-            source={models[medicineId]}
-            type="GLB"
-            position={[0, 0.05, 0]}
-            scale={[0.05, 0.05, 0.05]}
-            animation={{name: 'rotate', run: true, loop: true}}
-          />
-        </ViroNode>
-
-        {/* Bilgi Metni */}
-        <ViroNode position={[0, 0.25, 0]}>
-          <ViroText
-            text={infoText}
-            scale={[0.3, 0.3, 0.3]}
-            style={textStyles.infoText}
-            outerStroke={{type: 'Outline', width: 2, color: '#000000'}}
-            textLineBreakMode="WordWrap"
-            width={2}
-          />
-        </ViroNode>
-      </ViroARImageMarker>
-    );
-  };
+  }, []);
 
   return (
-    <ViroARScene>
-      <ViroAmbientLight color="#FFFFFF" intensity={200} />
-      <ViroSpotLight
-        position={[0, 5, 0]}
-        direction={[0, -1, 0]}
-        color="#FFFFFF"
-        intensity={500}
-        attenuationStartDistance={5}
-        attenuationEndDistance={10}
-        castsShadow={true}
-      />
+    <View style={styles.container}>
+      {/* 3D Model - Gerçek .glb dosyası */}
+      <Animated.View
+        style={[
+          styles.modelWrapper,
+          {transform: [{scale: scaleAnim}]},
+        ]}>
+        {/* Glow efekti */}
+        <Animated.View
+          style={[
+            styles.glowRing,
+            {
+              opacity: glowAnim,
+              borderColor: medicine.color,
+              shadowColor: medicine.color,
+            },
+          ]}
+        />
+        <Model3DViewer modelFile={MODEL_FILES[medicineId]} size={260} />
+      </Animated.View>
 
-      {renderMedicineAR('neoral', 'neoralTarget')}
-      {renderMedicineAR('deltacortril', 'deltacortrilTarget')}
-    </ViroARScene>
+      {/* İlaç Bilgi Kartı */}
+      <Animated.View
+        style={[
+          styles.infoCard,
+          {
+            transform: [{translateY: cardSlideAnim}],
+            opacity: cardOpacityAnim,
+          },
+        ]}>
+        {/* Tanındı badge */}
+        <View style={[styles.badge, {backgroundColor: medicine.color + '25'}]}>
+          <View style={[styles.badgeDot, {backgroundColor: Colors.success}]} />
+          <Text style={styles.badgeText}>{Strings.ar.recognized}</Text>
+        </View>
+
+        {/* İlaç adı */}
+        <Text style={styles.medicineName}>{medicine.name}</Text>
+        <Text style={styles.medicineGeneric}>
+          {medicine.genericName} - {medicine.dosage}
+        </Text>
+        <Text style={styles.medicineDesc} numberOfLines={2}>
+          {medicine.description}
+        </Text>
+
+        <View style={styles.divider} />
+
+        {/* Zaman bilgisi */}
+        <View style={styles.timeSection}>
+          <View style={styles.timeRow}>
+            <Text style={styles.timeIcon}>⏰</Text>
+            <View style={styles.timeInfo}>
+              <Text style={styles.timeLabel}>{Strings.ar.nextDoseAt}</Text>
+              <Text style={styles.timeValue}>{nextTimeFormatted}</Text>
+            </View>
+          </View>
+
+          <View style={styles.countdownBox}>
+            {countdown.isOverdue ? (
+              <Text style={styles.overdueText}>{Strings.home.overdue}</Text>
+            ) : (
+              <>
+                <Text style={styles.countdownValue}>
+                  {countdown.hours}sa {countdown.minutes}dk
+                </Text>
+                <Text style={styles.countdownLabel}>
+                  {Strings.ar.timeRemaining}
+                </Text>
+              </>
+            )}
+          </View>
+        </View>
+      </Animated.View>
+    </View>
   );
 }
 
-const textStyles = StyleSheet.create({
-  infoText: {
-    fontFamily: 'Arial',
-    fontSize: 15,
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    flex: 1,
+  },
+  // 3D Model
+  modelWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  glowRing: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    borderWidth: 2,
+    elevation: 20,
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 1,
+    shadowRadius: 40,
+  },
+  // Bilgi Kartı
+  infoCard: {
+    backgroundColor: 'rgba(10, 10, 20, 0.88)',
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    maxWidth: 340,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  badgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  badgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.success,
+  },
+  medicineName: {
+    fontSize: 24,
+    fontWeight: '800',
     color: '#FFFFFF',
-    textAlignVertical: 'center',
+    letterSpacing: -0.5,
+  },
+  medicineGeneric: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
+  },
+  medicineDesc: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.35)',
+    marginTop: 6,
+    lineHeight: 17,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: 14,
+  },
+  timeSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  timeIcon: {
+    fontSize: 28,
+    marginRight: 10,
+  },
+  timeInfo: {
+    flex: 1,
+  },
+  timeLabel: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+  },
+  timeValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.secondary,
+    marginTop: 2,
+  },
+  countdownBox: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  countdownValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  countdownLabel: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
+  },
+  overdueText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.warning,
   },
 });
