@@ -103,15 +103,10 @@ export function ARMedicineOverlay({medicineId, times}: Props) {
           styles.modelWrapper,
           {transform: [{scale: scaleAnim}]},
         ]}>
-        {/* Glow efekti */}
         <Animated.View
           style={[
             styles.glowRing,
-            {
-              opacity: glowAnim,
-              borderColor: medicine.color,
-              shadowColor: medicine.color,
-            },
+            {opacity: glowAnim, shadowColor: medicine.color},
           ]}
         />
         <Model3DViewer modelFile={MODEL_FILES[medicineId]} size={260} />
@@ -188,14 +183,15 @@ const styles = StyleSheet.create({
   },
   glowRing: {
     position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 2,
+    width: 270,
+    height: 270,
+    borderRadius: 135,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
     elevation: 20,
     shadowOffset: {width: 0, height: 0},
-    shadowOpacity: 1,
-    shadowRadius: 40,
+    shadowOpacity: 0.8,
+    shadowRadius: 30,
   },
   // Bilgi Kartı
   infoCard: {
