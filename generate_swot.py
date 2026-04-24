@@ -112,56 +112,56 @@ def add_divider(doc):
 # ── SWOT Verileri ────────────────────────────────────────
 
 STRENGTHS = [
-    "Artırılmış Gerçeklik (AR) Teknolojisi: Geleneksel ilaç takip uygulamalarından farklı olarak, hastalar ilaç kutusunu kameraya tutarak gerçek zamanlı 3D model ve sesli bilgi alabilmektedir. Bu, özellikle yaşlı ve teknolojiye uzak hastalar için son derece sezgisel bir deneyim sunar.",
+    "OCR Tabanlı İlaç Tanıma (ML Kit): VisionCamera + Google ML Kit metin tanıma entegrasyonu sayesinde hastalar ilaç kutusunu kameraya tutarak saniyeler içinde tanıma yaptırabilir. OCR yaklaşımı, marker bağımlılığını ortadan kaldırarak farklı baskı serisi ve kutu kondisyonlarında çok daha güvenilir sonuçlar verir.",
     "Sesli Komut Sistemi (TTS): Türkçe dil desteğiyle entegre edilen metin-konuşma teknolojisi, görme güçlüğü çeken yaşlı hastalar için kritik bir erişilebilirlik özelliğidir. Hasta ilacını kameraya tuttuğunda 'Bu Sandimmun Neoral. Bir sonraki kullanım saati akşam 8. 3 saat 22 dakika kaldı.' gibi net ve anlaşılır sesli bildirimler alır.",
-    "Yaşlı Dostu Arayüz Tasarımı: 18-24pt büyük fontlar, yüksek kontrastlı teal-turuncu renk paleti ve minimal navigasyon yapısı ile yaşlı hastaların teknolojiyle etkileşimindeki bariyerler en aza indirilmiştir. Sadece iki ekran (Ana Ekran + AR Kamera) ile karmaşıklıktan uzak bir kullanıcı deneyimi sunulur.",
-    "Gerçek Zamanlı Geri Sayım Sistemi: Her ilaç için saniye bazında güncellenen geri sayım sayaçları, hastaların bir sonraki doz zamanını her an görebilmesini sağlar. Bu özellik, karaciğer nakli sonrası kritik olan ilaç uyumluluğunu (adherence) önemli ölçüde artırır.",
-    "Kişiselleştirilebilir İlaç Saatleri: Varsayılan ilaç saatleri tanımlı olmakla birlikte, hasta veya hasta yakını tarafından kolayca düzenlenebilir. Bu esneklik, farklı doktorların farklı reçete protokollerine uyum sağlamayı mümkün kılar.",
-    "Offline Çalışma Kapasitesi: Uygulama internet bağlantısı gerektirmeden çalışır. İlaç saatleri AsyncStorage ile cihaz üzerinde saklanır, AR tanıma ve TTS yerel olarak çalışır. Bu, yaşlı hastaların internet erişimi olmayan ortamlarda bile uygulamayı kullanabilmesini garantiler.",
-    "Çapraz Platform Potansiyeli: React Native altyapısı sayesinde, şu an Android odaklı olan uygulama minimum eforla iOS platformuna da taşınabilir. Bu, gelecekte hasta erişimini önemli ölçüde genişletme potansiyeli sunar.",
-    "3D Model Entegrasyonu: İlaç kutularının gerçekçi 3D modellemeleri (.glb formatında) AR deneyimini zenginleştirir. Hasta ilacını tanıdığında, kutunun 3D modelinin dönerek belirmesi hem bilgisel hem de görsel açıdan etkileyici bir deneyim yaratır.",
-    "Giriş Gerektirmeyen Yapı: Uygulama herhangi bir kayıt veya giriş süreci gerektirmez. Yaşlı hastalar uygulamayı açtığı anda kullanmaya başlayabilir. Bu, kullanım bariyerini minimuma indiren kritik bir tasarım kararıdır.",
-    "Clean Code Mimarisi: Proje; constants, hooks, services, components, screens ve navigation katmanlarıyla temiz ve sürdürülebilir bir kod mimarisine sahiptir. TypeScript kullanımı tip güvenliği sağlar ve gelecekteki geliştirmeleri kolaylaştırır.",
+    "Haftalık Rutinim & İlaç Geçmiş Takibi: 7 günlük grid görünümüyle alınan/kaçırılan/bekleyen her doz anlık izlenebilir. Haftalık uyum yüzdesi otomatik hesaplanır. Bu özellik, hastaların kendi tedavilerine sahip çıkmasını ve bakıcıların uzaktan takibini güçlendirir.",
+    "Onaylı Doz Kaydı — 'İlacı Aldım' Sistemi: AR overlay açılınca hasta 'İlacı Aldım' butonuna basarak dozu onaylar. Kayıt AsyncStorage ve Firebase'e eş zamanlı yazılır. Böylece hem çevrimdışı güvenlik hem de bulut senkronizasyonu sağlanır; kaçırılan dozlar geçmişte görünür kalır.",
+    "Akıllı Bildirim & Alarm Sistemi: @notifee/react-native entegrasyonu ile her ilaç saati için günlük tekrarlayan Android bildirimleri otomatik planlanır. Kullanıcı saati güncellediğinde alarmlar anında yeniden kurulur. Sessiz saatler (23:00–07:00) korumalıdır.",
+    "Firebase Firestore Bulut Senkronizasyonu: Uygulama 'local-first' mimarisiyle çalışır; AsyncStorage birincil, Firestore ikincil depolama katmanıdır. Ağ kesintilerinde uygulama kesintisiz çalışır; bağlantı gelince otomatik senkronizasyon başlar. Cihaz değişikliğinde veri kaybı yaşanmaz.",
+    "Ebeveyn / Bakıcı Uzaktan Takip Modu: Hasta yakını, Rutinim ekranındaki bakıcı butonuna tıklayıp hastanın kısa ID'sini (AR-XXXX-XXXX formatı) girerek o günün tüm doz durumunu anlık görebilir. Firebase üzerinden çalışır; iki farklı cihaz arasında gerçek zamanlı takip mümkündür.",
+    "Auth-Free Cihaz Kimliği Mimarisi: Kayıt veya giriş gerektirmez. Her cihaza otomatik üretilen 8 karakterlik okunabilir ID (ör. AR-K3M8-PQ7X) kalıcı kimlik olarak kullanılır. Yaşlı hastaların şifre ve hesap yönetimiyle uğraşmaması için bilinçli alınmış kritik bir tasarım kararıdır.",
+    "Kişiselleştirilebilir İlaç Saatleri ile Tam Entegrasyon: Saat düzenlendiğinde AsyncStorage, Firebase Firestore ve @notifee alarmları tek seferde güncellenir. Üç sistem arasındaki tutarlılık otomatik sağlanır; veri tutarsızlığı riski yoktur.",
+    "Clean Code Mimarisi & Local-First Tasarım: constants, hooks, services, components, screens, navigation katmanlarıyla sürdürülebilir TypeScript mimarisi. Firestore hataları sessizce yakalanır; uygulama asla Firestore'a bağımlı kalmaz. Offline-first yaklaşım, yaşlı hasta cihazlarının bağlantı kalitesi göz önüne alındığında kritik önem taşır.",
 ]
 
 WEAKNESSES = [
-    "Sınırlı İlaç Veritabanı: Uygulama şu an yalnızca iki ilaç (Sandimmun Neoral ve Deltacortril) tanıyabilmektedir. Karaciğer nakli sonrası hastaların kullanabileceği Mycophenolate Mofetil (CellCept), Tacrolimus (Prograf), Ursodeoxycholic Acid gibi ek ilaçlar henüz desteklenmemektedir.",
-    "AR Görüntü Tanıma Hassasiyeti: ViroARImageMarker tabanlı tanıma, ilaç kutusunun fiziksel durumuna (yıpranmış, buruşmuş, farklı baskı serisi) ve ortam aydınlatmasına bağlı olarak tutarsız sonuçlar verebilir. Düşük ışık koşullarında veya kutu açıldığında tanıma doğruluğu düşebilir.",
-    "İnternet Bağımsız Güncelleme Eksikliği: Yeni ilaçlar veya doz değişiklikleri için uygulama güncellemesi gerekir. Uzaktan ilaç listesi güncelleme mekanizması bulunmamaktadır. Bu, doktor reçete değişikliklerinde gecikmeye neden olabilir.",
-    "Tek Platform Desteği (Android): Şu anki sürüm yalnızca Android cihazları desteklemektedir. iOS kullanan hastaların uygulamadan yararlanamaması, erişilebilirliği kısıtlar.",
-    "Bildirim/Alarm Eksikliği: Uygulama pasif bir bilgi aracıdır; proaktif olarak ilaç saati geldiğinde push notification veya alarm göndermez. Hasta uygulamayı açmadığı sürece ilaç hatırlatması almaz.",
-    "Doktor-Hasta Entegrasyonu Yok: Doktor veya eczacının hastanın ilaç programını uzaktan görüntülemesi veya güncellemesi mümkün değildir. Tedavi takibi tamamen hastanın kendi sorumluluğundadır.",
-    "İlaç Etkileşimi Bilgisi Yok: Uygulama, ilaçlar arası etkileşim, yan etkiler veya kontraendikasyon bilgisi sunmamaktadır. Hastanın besin-ilaç etkileşimleri (örn. Ciclosporin ile greyfurt) hakkında uyarılmaması risk oluşturabilir.",
+    "Sınırlı İlaç Veritabanı: Uygulama şu an yalnızca iki ilaç (Sandimmun Neoral ve Deltacortril) tanıyabilmektedir. Karaciğer nakli sonrası hastaların kullanabileceği Tacrolimus (Prograf), Mycophenolate Mofetil (CellCept), Ursodiol gibi ek ilaçlar henüz OCR anahtar kelime listesine eklenmemiştir.",
+    "OCR Tanıma Güvenilirliği: ML Kit metin tanıma, ilaç kutusunun fiziksel durumuna (yıpranmış, buruşmuş, farklı dil baskısı) ve ortam aydınlatmasına bağlı olarak hatalı sonuç verebilir. Kutu üzerindeki anahtar kelime eşleştirme yöntemi, görüntü sınıflandırma modellerine kıyasla daha kırılgandır.",
+    "Açık Firestore Güvenlik Kuralları: Mevcut güvenlik kuralları 'allow read, write: if true' şeklinde yapılandırılmıştır. Bu durum, URL'i bilen herhangi birinin koleksiyona erişebileceği anlamına gelir. Klinik ortama taşınmadan önce kural sıkılaştırması zorunludur.",
+    "Tek Platform Desteği (Android): Şu anki sürüm yalnızca Android cihazları desteklemektedir. iOS kullanan hasta ve bakıcıların uygulamadan yararlanamaması, özellikle bakıcı takip modunun kullanımını kısıtlar.",
+    "Doktor-Hasta Entegrasyonu Yok: Doktor veya eczacının hastanın ilaç programını uzaktan görüntülemesi veya güncellemesi mümkün değildir. Bakıcı modu yalnızca aile üyelerini kapsamakta; klinisyen entegrasyonu bulunmamaktadır.",
+    "İlaç Etkileşimi Bilgisi Yok: Uygulama ilaçlar arası etkileşim, yan etkiler veya kontraendikasyon bilgisi sunmamaktadır. Ciclosporin ile greyfurt etkileşimi gibi kritik besin-ilaç uyarıları henüz eklenmemiştir.",
     "Erişilebilirlik Sınırlamaları: Ekran okuyucu (TalkBack) uyumluluğu, renk körlüğü desteği ve motor engelli kullanıcılar için büyük dokunma alanları gibi gelişmiş erişilebilirlik özellikleri henüz implemente edilmemiştir.",
-    "Veri Yedekleme Yok: İlaç saatleri yalnızca cihaz yerel deposunda saklanır. Cihaz değişikliğinde veya uygulama silinmesinde tüm kişiselleştirilmiş veriler kaybolur.",
-    "ARCore Cihaz Bağımlılığı: AR özellikleri ARCore destekli cihaz gerektirir. Eski veya düşük seviye Android cihazlarda AR fonksiyonları çalışmayabilir, bu da yaşlı hastaların genellikle eski cihaz kullanması göz önüne alındığında önemli bir kısıtlamadır.",
+    "Bakıcı Modu — Tek Yönlü Veri Akışı: Bakıcı şu an yalnızca izleyebilir; hastanın saat programını uzaktan değiştirme, mesaj gönderme veya acil uyarı tetikleme yetkisi yoktur. Ebeveyn kontrolü ileride çift yönlü yapıya dönüştürülmelidir.",
+    "Firebase Bağımlılığı ve Tek Tedarikçi Riski: Google'ın Firebase fiyatlandırma politikası veya servis koşullarında yapacağı değişiklikler, özellikle veri hacmi arttıkça maliyet riski oluşturabilir. Alternatif backend mimarisine geçiş planı henüz yoktur.",
+    "İnternet Bağımsız Güncelleme Eksikliği: Yeni ilaç ekleme veya OCR anahtar kelime genişletme için uygulama güncellemesi gerekir. Uzaktan ilaç listesi güncelleme mekanizması bulunmamakta; doktor reçete değişikliklerinde gecikme yaşanabilir.",
 ]
 
 OPPORTUNITIES = [
-    "Sağlık Sektöründe AR Büyümesi: Küresel artırılmış gerçeklik sağlık pazarı 2025-2030 arasında yıllık %25+ büyüme öngörülmektedir. Bu proje, bu büyüme trendinin erken dönem uygulamalarından biri olarak konumlanabilir ve yatırımcı ilgisi çekebilir.",
-    "Hastane ve Klinik Entegrasyonları: Karaciğer nakli merkezleri ve organ nakli koordinasyon birimleriyle işbirliği yapılarak, uygulama taburculuk sürecinin standart bir parçası haline getirilebilir. Bu, hasta uyumluluğunu %30-40 artırma potansiyeline sahiptir.",
-    "Yapay Zeka ile İlaç Tanıma Geliştirme: TensorFlow Lite veya Google ML Kit entegrasyonu ile görüntü tabanlı ilaç tanıma sistemi, kutunun yanı sıra tablet/kapsül bazında da tanıma yapabilir hale getirilebilir. Bu, AR marker bağımlılığını ortadan kaldırır.",
-    "Çoklu Hastalık Alanlarına Genişleme: Aynı AR altyapısı; böbrek nakli, kalp nakli, diyabet, hipertansiyon, onkoloji gibi farklı hastalık alanlarına adapte edilebilir. Her hastalık için özelleştirilmiş ilaç veritabanı ve protokol eklenebilir.",
-    "Giyilebilir Cihaz Entegrasyonu: AR gözlükler (Meta Quest, Apple Vision Pro) ve akıllı saat entegrasyonuyla hands-free ilaç tanıma ve hatırlatma sistemi oluşturulabilir. Bu, yaşlı hastalar için kullanım kolaylığını katlamalı olarak artırır.",
-    "Eczane ve İlaç Firması Ortaklıkları: İlaç firmaları (Novartis, Pfizer) ve eczane zincirleriyle sponsorluk anlaşmaları yapılarak, uygulama ücretsiz dağıtılabilir ve ilaç bilgi içeriği zenginleştirilebilir.",
-    "Akademik Araştırma Potansiyeli: Proje, 'AR tabanlı ilaç uyumluluğu' alanında akademik yayın ve tez çalışmaları için özgün bir vaka sunmaktadır. Üniversite hastaneleriyle klinik çalışmalar planlanabilir.",
-    "Devlet Sağlık Politikalarıyla Uyum: Türkiye'nin dijital sağlık dönüşümü stratejisi ve e-Nabız entegrasyonlarıyla uyumlu bir şekilde konumlanarak, SGK veya Sağlık Bakanlığı desteği alınabilir.",
-    "Çok Dilli Genişleme: Uygulama altyapısı dil desteğine uygun tasarlanmıştır. Arapça, Kürtçe, Almanca gibi dillerin eklenmesiyle diaspora toplulukları ve uluslararası pazarlara açılabilir.",
-    "IoT ve Akıllı İlaç Kutusu Entegrasyonu: Bluetooth destekli akıllı ilaç kutuları ile entegrasyon sağlanarak, fiziksel ilaç alımının otomatik takibi ve doktora raporlanması mümkün hale getirilebilir.",
-    "Teletıp Entegrasyonu: Video görüşme modülü eklenerek, hasta AR kamerasıyla ilacı gösterirken doktorun uzaktan doğrulama yapması ve anlık reçete düzenlemesi sağlanabilir.",
+    "Sağlık Sektöründe Dijital Dönüşüm: Küresel dijital sağlık pazarı 2025-2030 arasında yıllık %25+ büyüme öngörülmektedir. Nefes Saati, AR + bulut senkronizasyonu + bakıcı takibi kombinasyonuyla bu trendin erken dönem referans uygulamalarından biri olarak konumlanabilir.",
+    "Hastane Taburculuk Süreci Entegrasyonu: Karaciğer nakli merkezleri ve organ nakli koordinasyon birimleriyle işbirliği yapılarak uygulama taburculuk paketinin standart parçası haline getirilebilir. Bakıcı modu, hastane ile aile arasındaki iletişim köprüsünü dijitalleştirir.",
+    "Firebase Altyapısının Genişletilmesi: Mevcut Firestore yapısı; ilaç etkileşimi kontrolü, doktor portalı, anlık bildirim (bakıcıya 'doz kaçırıldı' uyarısı) ve çok kullanıcılı aile grubu yönetimi gibi özellikler için sağlam bir temel oluşturmaktadır.",
+    "Yapay Zeka Destekli Tanıma: Mevcut OCR altyapısı, TensorFlow Lite veya on-device ML modeli ile güçlendirilerek tablet/kapsül görüntüsünden tanıma yapılabilir hale getirilebilir. Bu, kutunun açık ya da yıpranmış olduğu durumlarda güvenilirliği önemli ölçüde artırır.",
+    "Çoklu Hastalık Alanlarına Genişleme: Aynı mimari; böbrek nakli, kalp nakli, diyabet, onkoloji gibi alanlara adapte edilebilir. Her hastalık için özelleştirilmiş OCR anahtar kelime listesi ve ilaç protokolü eklenebilir. Firebase, çok tenant mimarisine uygundur.",
+    "Bakıcı Modunun Klinisyen Portala Dönüştürülmesi: Bakıcı ID sorgulama altyapısı, doktor ve hemşire için web paneli (React veya Next.js) ile genişletilebilir. Doktor birden fazla hastanın uyum raporunu tek ekrandan görebilir.",
+    "Akademik Araştırma ve Klinik Çalışmalar: Firestore'da biriken gerçek zamanlı ilaç uyum verileri; 'AR + bulut tabanlı hatırlatma sistemlerinin organ nakli sonrası uyuma etkisi' konusunda özgün akademik yayın ve tez materyali sunmaktadır.",
+    "Devlet Sağlık Politikalarıyla Uyum: Türkiye'nin dijital sağlık dönüşümü stratejisi ve e-Nabız entegrasyonlarıyla uyumlu konumlanarak SGK veya Sağlık Bakanlığı desteği alınabilir. Bakıcı takip modu, yaşlı bakımı politikalarına doğrudan katkı sağlar.",
+    "IoT ve Akıllı İlaç Kutusu Entegrasyonu: Bluetooth destekli akıllı ilaç kutuları ile entegrasyon sağlanarak fiziksel ilaç alımının otomatik Firebase'e yazılması ve bakıcıya anlık bildirim gönderilmesi mümkün hale getirilebilir.",
+    "Giyilebilir Cihaz & Bildirim Genişlemesi: @notifee altyapısı Wear OS uyumlu akıllı saatlere genişletilebilir. Hasta bileğinde titreşimli ilaç hatırlatması, özellikle yaşlı kullanıcılar için telefon bildiriminden daha güvenilir bir alternatif sunar.",
+    "Eczane ve İlaç Firması Ortaklıkları: Novartis ve Pfizer gibi üreticilerle sponsorluk anlaşmaları yapılarak ilaç veritabanı genişletilebilir, 3D model kütüphanesi zenginleştirilebilir. Bakıcı izleme verileri anonim olarak ilaç firmaları için değerli uyum araştırması sağlar.",
 ]
 
 THREATS = [
-    "Yasal ve Düzenleyici Riskler: Tıbbi cihaz yazılımı olarak sınıflandırılma riski mevcuttur. T.C. İlaç ve Tıbbi Cihaz Kurumu (TİTCK) veya CE/FDA onayı gerekebilir. Onay süreçleri uzun ve maliyetli olabilir.",
-    "Veri Gizliliği ve KVKK Uyumu: Kamera kullanımı ve sağlık verisi işlenmesi, KVKK (Kişisel Verilerin Korunması Kanunu) ve GDPR kapsamında ciddi yükümlülükler doğurur. Veri ihlali durumunda ağır yaptırımlar uygulanabilir.",
-    "Teknolojik Eskime Riski: React Native, ViroReact ve ARCore kütüphanelerinin sürdürülebilirliği üçüncü taraf topluluklara bağlıdır. ViroReact'ın topluluk tarafından sürdürülmesi, uzun vadede bakım ve güncelleme riskleri oluşturur.",
-    "Hasta Güvenliği Riskleri: Yanlış ilaç tanıma veya hatalı saat bilgisi, hastanın yanlış ilacı almasına veya dozunu kaçırmasına neden olabilir. Karaciğer nakli hastalarında bu durum organ reddi gibi hayati sonuçlara yol açabilir.",
-    "Rekabet Ortamı: Medisafe, MyTherapy, Pill Reminder gibi olgun ilaç hatırlatma uygulamaları milyonlarca kullanıcıya sahiptir. AR özelliği diferansiyasyon sağlasa da, bu uygulamaların geniş özellik seti ve kullanıcı tabanı ciddi rekabet oluşturur.",
-    "Yaşlı Kullanıcı Adaptasyon Zorluğu: Hedef kitle olan 60+ yaş grubu, AR teknolojisine adapte olmakta güçlük çekebilir. Akıllı telefon kullanım oranlarının bu yaş grubunda düşük olması, uygulama benimsenmesini olumsuz etkileyebilir.",
-    "ARCore Platformu Kısıtlamaları: Google'ın ARCore desteğini azaltması veya API değişiklikleri yapması durumunda, uygulamanın AR fonksiyonları çalışmaz hale gelebilir. Platform bağımlılığı stratejik bir risk oluşturur.",
-    "Yanlış Tıbbi Bilgi Riski: Uygulamanın sağladığı ilaç bilgilerinin güncel ve doğru tutulması sorumluluğu kritiktir. Güncel olmayan prospektüs bilgileri veya doz önerileri hukuki sorumluluk doğurabilir.",
-    "Cihaz Donanım Gereksinimleri: AR uygulamaları yüksek işlemci gücü ve pil tüketimi gerektirir. Yaşlı hastaların cihazlarının bu gereksinimleri karşılamaması veya pilin hızla tükenmesi, kullanıcı memnuniyetini düşürebilir.",
-    "Siber Güvenlik Tehditleri: Sağlık verilerini hedefleyen siber saldırılar artmaktadır. Yerel depolama şifrelenmemiş olması durumunda, cihaz çalınması veya kötü amaçlı yazılım bulaşması halinde hasta verileri risk altına girebilir.",
+    "Açık Firestore Kurallarından Kaynaklanan Güvenlik Riski: Geliştirme aşamasında kullanılan 'allow read, write: if true' kuralları, gerçek hasta verilerinin kötü niyetli kişilerce okunmasına veya değiştirilmesine olanak tanır. Klinik kullanım öncesi bu kuralların kesinlikle sıkılaştırılması gerekir.",
+    "Yasal ve Düzenleyici Riskler: Tıbbi cihaz yazılımı olarak sınıflandırılma riski mevcuttur. T.C. İlaç ve Tıbbi Cihaz Kurumu (TİTCK) onayı gerekebilir. Firestore'da sağlık verisi saklanması, KVKK ve GDPR kapsamında ek yükümlülükler doğurur.",
+    "Hasta Güvenliği Riskleri: Hatalı OCR tanıma veya yanlış saat bilgisi, hastanın yanlış ilacı almasına ya da dozu kaçırmasına neden olabilir. Karaciğer nakli hastalarında bu durum organ reddi gibi hayati sonuçlara yol açabilir. 'İlacı Aldım' onayı bu riski azaltsa da ortadan kaldırmaz.",
+    "Firebase Bağımlılığı ve Tek Tedarikçi Riski: Google Firebase'in fiyatlandırma politikası değiştiğinde veya servis kesintisi yaşandığında bakıcı modu ve bulut senkronizasyonu devre dışı kalır. Uygulama offline çalışmaya devam etse de veri paylaşımı etkilenir.",
+    "Rekabet Ortamı: Medisafe, MyTherapy ve Pill Reminder gibi olgun uygulamalar milyonlarca kullanıcıya sahiptir. Bu uygulamalar bakıcı bildirimi, çok ilaçlı takip ve doktor entegrasyonu gibi özelliklere zaten sahipken, Nefes Saati'nin AR ve OCR farkı tek başına yeterli diferansiyasyon sağlamayabilir.",
+    "Yaşlı Kullanıcı Adaptasyon Zorluğu: Hedef kitle olan 60+ yaş grubu, AR kamera kullanımı, ID paylaşımı ve bildirim yönetimine adapte olmakta güçlük çekebilir. Uygulamanın görece zenginleşen özellik seti, başlangıçtaki minimal tasarım ilkesiyle çelişme riski taşır.",
+    "Yanlış Tıbbi Bilgi Riski: İlaç bilgilerinin güncel ve doğru tutulması sorumluluğu kritiktir. Güncel olmayan prospektüs bilgileri veya doz saatleri hukuki sorumluluk doğurabilir. Firebase'de saklanan verinin doğruluğu uygulama tarafından doğrulanamamaktadır.",
+    "Siber Güvenlik Tehditleri: Sağlık verilerini hedefleyen siber saldırılar artmaktadır. AsyncStorage ve Firestore'daki verilerin şifrelenmemiş olması, cihaz çalınması veya kötü amaçlı yazılım bulaşması durumunda hasta bilgilerini riske atar.",
+    "Platform ve Kütüphane Eskime Riski: React Native 0.83, @notifee, @react-native-firebase gibi bağımlılıkların büyük versiyon güncellemeleri kırıcı değişiklikler getirebilir. Özellikle yeni React Native mimarisi (Fabric/TurboModules) bazı kütüphanelerin yeniden yazılmasını gerektirebilir.",
+    "Cihaz Donanım Gereksinimleri: Kamera sürekli kullanımı, Firestore ağ bağlantısı ve @notifee alarm işlemleri pil tüketimini artırır. Yaşlı hastaların genellikle eski ve düşük kapasiteli cihaz kullanması, uzun süreli kullanım deneyimini olumsuz etkileyebilir.",
 ]
 
 # ── AR Teknolojisi Genel SWOT ────────────────────────────
@@ -220,7 +220,7 @@ def create_document():
     # Başlık
     title = doc.add_paragraph()
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = title.add_run("AR SAĞLIK PROJESİ")
+    run = title.add_run("NEFES SAATİ")
     run.font.size = Pt(36)
     run.font.color.rgb = COLOR_PRIMARY
     run.font.name = "Calibri"
@@ -248,7 +248,7 @@ def create_document():
 
     # Tarih ve bilgiler
     info_items = [
-        "Teknoloji: React Native CLI + ViroReact + ARCore",
+        "Teknoloji: React Native CLI 0.83 + VisionCamera + ML Kit + Three.js + Firebase Firestore + @notifee",
         "Platform: Android",
         "İlaçlar: Sandimmun Neoral (Ciclosporin) | Deltacortril (Prednisolone)",
         "Tarih: Nisan 2026",
@@ -305,10 +305,11 @@ def create_document():
     add_heading_styled(doc, "1. Giriş ve Proje Tanımı", level=1)
 
     intro_text = (
-        "AR Sağlık Projesi, karaciğer nakli sonrası tedavi sürecindeki yaşlı hastaların ilaç yönetimini "
-        "kolaylaştırmak amacıyla geliştirilmiş bir artırılmış gerçeklik (Augmented Reality - AR) tabanlı "
-        "mobil uygulamadır. Uygulama, React Native CLI altyapısı üzerine inşa edilmiş olup, ViroReact "
-        "kütüphanesi aracılığıyla ARCore destekli Android cihazlarda çalışmaktadır."
+        "Nefes Saati, karaciğer nakli sonrası tedavi sürecindeki yaşlı hastaların ilaç yönetimini "
+        "kolaylaştırmak amacıyla geliştirilmiş, artırılmış gerçeklik (AR) tabanlı Android mobil "
+        "uygulamasıdır. React Native CLI 0.83 altyapısı üzerine inşa edilen uygulama; VisionCamera, "
+        "Google ML Kit OCR, Three.js 3D model görüntüleyici, Firebase Firestore ve @notifee bildirim "
+        "sistemi gibi modern teknolojileri tek çatı altında birleştirmektedir."
     )
     add_paragraph_styled(doc, intro_text)
 
@@ -316,17 +317,16 @@ def create_document():
         "Karaciğer nakli sonrası hastalar, bağışıklık sistemini baskılamak ve organ reddini önlemek için "
         "ömür boyu ilaç kullanmak zorundadır. Bu ilaçların düzenli ve doğru zamanda alınması hayati "
         "önem taşır. Özellikle yaşlı hasta grubunda ilaç uyumsuzluğu (non-adherence) oranları %40-60 "
-        "arasında seyretmekte ve bu durum organ reddi, hastaneye yeniden yatış ve ölüm riskini "
+        "arasında seyretmekte; bu durum organ reddi, hastaneye yeniden yatış ve ölüm riskini "
         "önemli ölçüde artırmaktadır."
     )
     add_paragraph_styled(doc, intro2)
 
     intro3 = (
-        "Bu proje, geleneksel ilaç hatırlatma yöntemlerinin ötesine geçerek, hastanın ilaç kutusunu "
-        "kameraya tutması yeterli olacak şekilde tasarlanmıştır. Uygulama ilacı tanıdığında, kutunun "
-        "üzerinde 3D model gösterir ve Türkçe sesli komutla bir sonraki doz zamanını bildirir. "
-        "Bu yaklaşım, teknolojiye uzak yaşlı hastalar için bile sezgisel ve kullanımı kolay "
-        "bir deneyim sunmaktadır."
+        "Uygulama; ilaç kutusu OCR tanıma, gerçek zamanlı 3D model ve Türkçe sesli bildirim özelliklerinin "
+        "yanı sıra, 'İlacı Aldım' onay sistemi, haftalık rutinim ekranı, Firebase tabanlı bulut senkronizasyonu "
+        "ve ebeveyn/bakıcı uzaktan takip modunu da kapsamaktadır. Tüm bu özellikler, hasta ve hasta yakınlarını "
+        "tedavi sürecinde aktif birer katılımcıya dönüştürmeyi hedeflemektedir."
     )
     add_paragraph_styled(doc, intro3)
 
@@ -624,32 +624,32 @@ def create_document():
 
     strategies = [
         ("SO Stratejileri (Güçlü Yönler + Fırsatlar)", COLOR_STRENGTH, [
-            "AR teknolojisinin sezgisel yapısını kullanarak hastane taburculuk süreçlerine entegre olun. Yaşlı dostu arayüz, hastane yöneticileri için güçlü bir satış argümanıdır.",
-            "3D model ve TTS altyapısını genişleterek, yapay zeka destekli ilaç tanıma sistemine geçiş yapın. Bu, ARCore marker bağımlılığını ortadan kaldırır ve tanıma doğruluğunu artırır.",
-            "React Native'in çapraz platform avantajını kullanarak iOS sürümünü çıkarın. Böylece hasta erişim tabanını iki katına çıkarabilirsiniz.",
-            "Offline çalışma kapasitesini öne çıkararak kırsal bölgelerdeki hastanelere ve sağlık ocaklarına ulaşın.",
-            "Akademik yayınlar ve klinik çalışmalarla projenin bilimsel geçerliliğini kanıtlayın; bu, devlet desteği ve hibe almayı kolaylaştırır.",
+            "Bakıcı modu + Firebase altyapısını kullanarak hastane taburculuk paketine entegre olun. Hasta uyum verilerinin Firestore'dan klinik panele aktarılması, hastane yöneticileri için güçlü bir satış argümanıdır.",
+            "OCR + 3D model + TTS altyapısını ML tabanlı görüntü sınıflandırmasıyla güçlendirin. On-device TensorFlow Lite modeli, kutu durumundan bağımsız çok daha güvenilir tanıma sağlar.",
+            "React Native'in çapraz platform avantajını kullanarak iOS sürümünü çıkarın. Bakıcı modunun iOS'ta da çalışması, aile üyelerinin farklı platformlardan takip yapmasını sağlar.",
+            "Akademik yayınlar için Firestore'daki anonim uyum verilerini kullanın. 'Bulut senkronizasyonlu AR hatırlatma sistemlerinin organ nakli sonrası uyuma etkisi' tezi için gerçek veri mevcuttur.",
+            "Offline-first mimarisini öne çıkararak kırsal bölgelerdeki hastanelere ulaşın; bağlantı gelince senkronize olan yapı, düşük internet kalitesinde bile güvenilirlik sağlar.",
         ]),
         ("WO Stratejileri (Zayıf Yönler + Fırsatlar)", COLOR_OPP, [
-            "İlaç veritabanı sınırlılığını, eczane ve ilaç firması ortaklıklarıyla aşın. Novartis ve Pfizer gibi firmalardan ilaç verisi ve finansal destek alın.",
-            "Bildirim eksikliğini gidermek için push notification ve alarm sistemi ekleyin. Bu özellik, rekabet avantajını önemli ölçüde artıracaktır.",
-            "Doktor-hasta entegrasyonu eksikliğini teletıp modülüyle çözün. Bulut tabanlı bir backend ile doktorların hasta ilaç programını uzaktan yönetmesini sağlayın.",
-            "ARCore cihaz bağımlılığını azaltmak için, AR desteklemeyen cihazlarda kamera tabanlı basit ilaç tanıma modu (fallback) sunun.",
-            "Erişilebilirlik sınırlamalarını TalkBack uyumluluğu ve sesli navigasyon ile aşarak, engelli hasta grubuna da hizmet verin.",
+            "Firestore güvenlik kurallarını Firebase Authentication veya cihaz ID doğrulamasıyla sıkılaştırın. Bu adım, gerçek hasta verisiyle çalışmak için ön koşuldur.",
+            "İlaç veritabanı sınırlılığını eczane ve ilaç firması ortaklıklarıyla aşın; Tacrolimus, CellCept gibi nakil ilaçlarını OCR listesine ve Firestore'a ekleyin.",
+            "Bakıcı modunu çift yönlü hale getirin: bakıcı yalnızca izlemekle kalmayıp hastaya 'ilacını al' bildirimi gönderebilsin, saat programını uzaktan düzenleyebilsin.",
+            "Doktor-hasta entegrasyonu için Firestore üzerine bir web paneli (React/Next.js) inşa edin. Mevcut veri modeli bu genişlemeye hazırdır, ek backend mimarisi gerekmez.",
+            "Erişilebilirlik sınırlamalarını TalkBack uyumluluğu ve sesli navigasyon ile aşarak engelli hasta grubuna hizmet verin; yaşlı dostu tasarım ilkesi bu entegrasyonu kolaylaştırmaktadır.",
         ]),
         ("ST Stratejileri (Güçlü Yönler + Tehditler)", COLOR_THREAT, [
-            "Yasal riskleri minimize etmek için 'tıbbi bilgi aracı' olarak konumlanın, 'tıbbi cihaz' sınıflandırmasından kaçının. Uygulama içi yasal uyarılar ekleyin.",
-            "Hasta güvenliği risklerini azaltmak için çoklu doğrulama sistemi uygulayın: ilaç tanındığında hastaya 'Bu ilacı aldığınızı onaylıyor musunuz?' sorusu sorun.",
-            "ViroReact teknolojik eskime riskine karşı, AR katmanını soyutlanmış bir mimariyle tasarlayın. Böylece gelecekte başka bir AR SDK'ya geçiş kolay olur.",
-            "Rekabet tehdidine karşı, AR ile ilaç tanıma özelliğini patent veya faydalı model ile koruma altına alın.",
-            "KVKK uyumu için kamera verilerinin cihaz üzerinde işlenip sunucuya gönderilmediğini belgeleyin ve gizlilik politikası oluşturun.",
+            "Firestore güvenlik riskine karşı, 'İlacı Aldım' onay sisteminin oluşturduğu audit trail'i veri bütünlüğü kanıtı olarak belgelendirin. KVKK uyumu için kamera verilerinin cihaz üzerinde işlendiğini ve sunucuya gönderilmediğini açıkça ilan edin.",
+            "Hasta güvenliği için OCR tanıma sonucuna 'Bu ilacı mı kullanıyorsunuz? Eğer yanlışsa taramayı iptal edin.' onay adımı ekleyin. 'İlacı Aldım' butonu bu zinciri tamamlar.",
+            "Rekabet tehdidine karşı, Auth-free cihaz ID + bakıcı takip + AR tanıma kombinasyonunu farklılaştırıcı özellik olarak öne çıkarın; patent veya faydalı model başvurusu yapın.",
+            "Firebase tek tedarikçi riskine karşı, servis katmanını soyutlayın (firestoreService.ts zaten bunu yapmaktadır). Gerektiğinde Supabase veya MongoDB Atlas'a geçiş minimum eforla mümkün olsun.",
+            "Yasal riskleri minimize etmek için 'tıbbi bilgi aracı' konumlamasını koruyun, 'tıbbi cihaz' sınıflandırmasından kaçının; uygulama içi sorumluluk reddi beyanları ekleyin.",
         ]),
         ("WT Stratejileri (Zayıf Yönler + Tehditler)", COLOR_WEAKNESS, [
-            "Sınırlı ilaç veritabanı ve yasal riskler birleştiğinde, yanlış tanıma riski artar. Bu nedenle, tanınmayan ilaçlar için 'Bu ilacı tanıyamadım, lütfen doktorunuza danışın' mesajı zorunlu olmalıdır.",
-            "Yaşlı kullanıcı adaptasyon zorluğu ve donanım gereksinimleri birlikte ele alınmalıdır. Hasta yakınları için bir 'kurulum rehberi' ve cihaz uyumluluk listesi hazırlayın.",
-            "Veri yedekleme eksikliği ve siber güvenlik tehditleri birlikte çözülmelidir. Şifreli yerel depolama ve opsiyonel bulut yedekleme özelliği ekleyin.",
-            "Bildirim eksikliği ve ARCore kısıtlamaları, AR olmayan bir 'basit mod' ile dengelenebilir. Bu mod sadece ilaç listesi, geri sayım ve alarmları içerir.",
-            "Düzenleyici belirsizliğe karşı, Sağlık Bakanlığı ve TİTCK ile erken aşamada iletişime geçerek, uygulamanın yasal statüsünü netleştirin.",
+            "Açık Firestore kuralları + siber güvenlik tehdidi: Üretim öncesinde mutlaka kural sıkılaştırması yapın. Geçiş dönemi için en azından cihaz ID eşleşmesi zorunluluğu getiren kural seti hazırlayın.",
+            "Sınırlı ilaç veritabanı + yanlış tanıma riski: Tanınmayan ilaçlar için 'Bu ilacı tanıyamadım, lütfen doktorunuza danışın' mesajı zorunlu tutun; kullanıcının manuel ilaç seçimi yapabileceği fallback mod ekleyin.",
+            "Yaşlı adaptasyon zorluğu + özellik artışı çelişkisi: Yeni özellikleri (bakıcı modu, rutinim ekranı) 'ileri kullanıcı' segmentine yönlendirin; ana ekranı sade tutarak temel kullanım akışını koruyun.",
+            "Firebase bağımlılığı + platform eskime riski: Kritik iş mantığını (doz hesaplama, alarm planlama) servis katmanında izole tutun. Her kütüphane güncellemesinde entegrasyon testleri yapın.",
+            "Düzenleyici belirsizliğe karşı Sağlık Bakanlığı ve TİTCK ile erken aşamada iletişime geçin; Firestore'da saklanan sağlık verisinin hukuki statüsünü netleştirmek klinik kullanım öncesinde zorunludur.",
         ]),
     ]
 
@@ -678,35 +678,36 @@ def create_document():
     add_heading_styled(doc, "7. Sonuç ve Değerlendirme", level=1)
 
     conclusion_paras = [
-        "AR Sağlık Projesi, karaciğer nakli sonrası ilaç yönetimi alanında artırılmış gerçeklik "
-        "teknolojisini kullanan yenilikçi bir çözüm olarak önemli bir potansiyel taşımaktadır. "
-        "SWOT analizi sonuçları, projenin güçlü bir teknolojik temele sahip olduğunu, ancak "
-        "bazı kritik alanlarda iyileştirme gerektirdiğini ortaya koymaktadır.",
+        "Nefes Saati, karaciğer nakli sonrası ilaç yönetimi alanında artırılmış gerçeklik, bulut "
+        "senkronizasyonu ve bakıcı takip sistemi özelliklerini bir arada sunan kapsamlı bir dijital "
+        "sağlık uygulamasıdır. SWOT analizi sonuçları, projenin güçlü bir teknolojik ve mimari temele "
+        "sahip olduğunu; ancak güvenlik, veritabanı genişliği ve platform çeşitliliği konularında "
+        "iyileştirme fırsatları barındırdığını ortaya koymaktadır.",
 
-        "Projenin en belirgin güçlü yönleri; AR tabanlı sezgisel ilaç tanıma, Türkçe sesli "
-        "komut sistemi ve yaşlı dostu arayüz tasarımıdır. Bu özellikler, uygulamayı mevcut "
-        "ilaç hatırlatma uygulamalarından açık bir şekilde farklılaştırmaktadır. Özellikle "
-        "hastanın ilacını kameraya tutarak bilgi alması paradigması, dijital sağlık okuryazarlığı "
-        "düşük olan yaşlı hastalar için devrim niteliğinde bir yaklaşımdır.",
+        "Projenin en belirgin güçlü yönleri; OCR tabanlı ilaç tanıma, Türkçe sesli bildirim, "
+        "'İlacı Aldım' onay sistemi, haftalık rutinim takibi ve ebeveyn/bakıcı uzaktan izleme modudur. "
+        "Bu özellikler kombinasyonu, uygulamayı mevcut ilaç hatırlatma uygulamalarından net biçimde "
+        "farklılaştırmaktadır. Özellikle local-first + Firebase senkronizasyonu mimarisi, hem "
+        "çevrimdışı güvenilirliği hem de bulut tabanlı paylaşımı aynı anda garanti altına alır.",
 
-        "Öte yandan, sınırlı ilaç veritabanı, proaktif bildirim eksikliği ve tek platform "
-        "desteği gibi zayıf yönler, uygulamanın klinik etkinliğini kısıtlamaktadır. Bu "
-        "zayıflıkların giderilmesi, projenin piyasa başarısı için kritik öneme sahiptir.",
+        "Açık Firestore güvenlik kuralları, sınırlı ilaç veritabanı ve tek platform desteği gibi "
+        "zayıf yönler, uygulamanın klinik ortama taşınabilmesi için öncelikli ele alınması gereken "
+        "konulardır. Bu zayıflıkların giderilmesi, projenin gerçek hasta gruplarıyla kullanılabilmesi "
+        "için zorunlu ön koşullardır.",
 
-        "Fırsatlar açısından değerlendirildiğinde, küresel AR sağlık pazarının hızlı büyümesi, "
-        "hastane entegrasyonu potansiyeli ve yapay zeka ile güçlendirme imkanları, projenin "
-        "gelecek vizyonunu oldukça parlak kılmaktadır. Ancak bu fırsatların "
-        "değerlendirilmesi, yasal düzenlemeler, hasta güvenliği riskleri ve teknolojik "
-        "eskime tehditleriyle dengelenmelidir.",
+        "Fırsatlar açısından bakıldığında, Firebase altyapısının doktor portalına, IoT entegrasyonuna "
+        "ve akademik veri analizine dönüştürülme potansiyeli oldukça yüksektir. Mevcut Firestore veri "
+        "modeli, bu genişlemeler için yeniden yapılandırma gerektirmeksizin temel oluşturmaktadır. "
+        "Ancak bu fırsatların değerlendirilmesi; güvenlik kuralı sıkılaştırması, yasal düzenlemeler "
+        "ve hasta güvenliği riskleriyle paralel yürütülmelidir.",
 
-        "Stratejik öneriler çerçevesinde, kısa vadede bildirim sistemi ve ilaç veritabanı "
-        "genişletilmesi, orta vadede iOS desteği ve doktor entegrasyonu, uzun vadede ise "
-        "yapay zeka destekli tanıma ve giyilebilir cihaz entegrasyonu hedeflenmelidir. "
-        "Bu aşamalı yaklaşım, projenin sürdürülebilir büyümesini ve klinik etkisini "
-        "maksimize edecektir.",
+        "Stratejik yol haritası olarak; kısa vadede Firestore güvenlik kurallarının sıkılaştırılması "
+        "ve OCR veritabanının genişletilmesi, orta vadede iOS desteği ve çift yönlü bakıcı modu, "
+        "uzun vadede doktor portalı ve ML tabanlı görüntü tanıma sistemi hedeflenmelidir. "
+        "Bu aşamalı yaklaşım, projenin sürdürülebilir büyümesini ve klinik etkisini maksimize edecektir.",
 
-        "Sonuç olarak, AR Sağlık Projesi; doğru stratejik kararlarla, karaciğer nakli sonrası "
-        "ilaç uyumluluğu sorununa yenilikçi ve etkili bir çözüm sunma potansiyeline sahip, "
+        "Sonuç olarak Nefes Saati; doğru stratejik kararlarla, karaciğer nakli sonrası ilaç "
+        "uyumluluğu sorununa yenilikçi, güvenilir ve kapsamlı bir çözüm sunma potansiyeline sahip, "
         "umut vadeden bir dijital sağlık girişimidir.",
     ]
 
