@@ -14,6 +14,9 @@ export const Strings = {
     timeUpdated: 'İlaç saati güncellendi',
     dailyTimes: 'Günlük Kullanım Saatleri',
     dose: 'Doz',
+    statusTaken: 'Alındı',
+    statusMissed: 'Atlandı',
+    statusPending: 'Bekleniyor',
   },
   ar: {
     instruction: 'İlacınızı kameraya tutun',
@@ -21,6 +24,25 @@ export const Strings = {
     back: 'Geri',
     nextDoseAt: 'Bir sonraki kullanım saati',
     timeRemaining: 'Kalan süre',
+    doseTaken: 'İlacı Aldım',
+    doseAlreadyTaken: 'Zaten kaydedildi',
+    doseSaved: 'İlaç alımı kaydedildi ✓',
+  },
+  routine: {
+    title: 'Haftalık Rutinim',
+    subtitle: 'Son 7 gün',
+    compliance: 'Uyum',
+    taken: 'Alındı',
+    missed: 'Kaçırıldı',
+    pending: 'Bekleniyor',
+    thisWeek: 'Bu Hafta',
+    noRecords: 'Henüz ilaç kaydı yok',
+    noRecordsDesc: 'AR kamerayı kullanarak ilaç aldığınızı kaydedin',
+  },
+  notification: {
+    channelName: 'İlaç Hatırlatıcıları',
+    title: (name: string) => `💊 ${name}`,
+    body: (dosage: string) => `${dosage} — ilaç alma zamanı!`,
   },
   tts: {
     medicineSpeech: (

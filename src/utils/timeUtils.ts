@@ -65,3 +65,29 @@ export function getCurrentTimeStr(): string {
   const now = new Date();
   return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 }
+
+// Verilen saat listesinden şu ana en yakın dozu bulur (ilaç alındı kaydı için)
+export function findCurrentDoseTime(times: string[]): string {
+  if (times.length === 0) {
+    return '08:00';
+  }
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  let closest = times[0];
+  let minDiff = Infinity;
+
+  for (const time of times) {
+    const {hours, minutes} = parseTime(time);
+    const diff = Math.abs(hours * 60 + minutes - currentMinutes);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = time;
+    }
+  }
+  return closest;
+}
+
+export function getTodayDateStr(): string {
+  return new Date().toISOString().split('T')[0];
+}

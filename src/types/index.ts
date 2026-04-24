@@ -21,7 +21,21 @@ export interface CountdownInfo {
   isOverdue: boolean;
 }
 
+export interface DoseRecord {
+  id: string;
+  medicineId: string;
+  date: string;        // 'YYYY-MM-DD'
+  scheduledTime: string; // 'HH:MM'
+  takenAt: string | null;
+  taken: boolean;
+}
+
+export type TabParamList = {
+  HomeTab: undefined;
+  RoutineTab: undefined;
+};
+
 export type RootStackParamList = {
-  Home: undefined;
+  MainTabs: undefined;
   ARCamera: undefined;
 };

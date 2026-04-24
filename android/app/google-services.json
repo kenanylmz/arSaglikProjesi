@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1019376514235",
+    "project_id": "arsaglik",
+    "storage_bucket": "arsaglik.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019376514235:android:5cdbade98b7d690d43e59e",
+        "android_client_info": {
+          "package_name": "com.arsaglikprojesi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfpMDKRMDu2DFPynxIaJpHcQXf3BIt5To"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

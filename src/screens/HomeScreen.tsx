@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -16,18 +17,46 @@ import {Strings} from '../constants/strings';
 import {MEDICINES} from '../constants/medicines';
 import {MedicineCard} from '../components/MedicineCard';
 import {useMedicineSchedule} from '../hooks/useMedicineSchedule';
+import {useMedicineHistory} from '../hooks/useMedicineHistory';
 import {initTTS} from '../services/ttsService';
+import {
+  requestNotificationPermission,
+  scheduleAllNotifications,
+} from '../services/notificationService';
+import {getOrCreateUserId} from '../hooks/useUserId';
+import {ensureUserDoc, syncSchedule} from '../services/firestoreService';
 import type {RootStackParamList} from '../types';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const {getTimes, updateTimes, loading} = useMedicineSchedule();
+  const {getTimes, updateTimes, loading, schedule} = useMedicineSchedule();
+  const {loadRecords, isDoseTaken} = useMedicineHistory();
 
   useEffect(() => {
     initTTS();
+    requestNotificationPermission();
   }, []);
+
+  // Schedule yüklendikten sonra: bildirimler + Firestore ilk sync
+  useEffect(() => {
+    if (!loading) {
+      scheduleAllNotifications(schedule);
+      // Kullanıcı dokümanı yoksa oluştur, schedule'ı aktar
+      getOrCreateUserId()
+        .then(userId => ensureUserDoc(userId))
+        .catch(() => {});
+      syncSchedule(schedule).catch(() => {});
+    }
+  }, [loading]);
+
+  // AR kameradan dönünce kayıtları yenile
+  useFocusEffect(
+    useCallback(() => {
+      loadRecords();
+    }, [loadRecords]),
+  );
 
   if (loading) {
     return (
@@ -64,14 +93,22 @@ export function HomeScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        {MEDICINES.map(medicine => (
-          <MedicineCard
-            key={medicine.id}
-            medicine={medicine}
-            times={getTimes(medicine.id)}
-            onUpdateTimes={newTimes => updateTimes(medicine.id, newTimes)}
-          />
-        ))}
+        {MEDICINES.map(medicine => {
+          const times = getTimes(medicine.id);
+          const today = new Date().toISOString().split('T')[0];
+          const takenTimes = times.filter(t =>
+            isDoseTaken(medicine.id, today, t),
+          );
+          return (
+            <MedicineCard
+              key={medicine.id}
+              medicine={medicine}
+              times={times}
+              takenTimesToday={takenTimes}
+              onUpdateTimes={newTimes => updateTimes(medicine.id, newTimes)}
+            />
+          );
+        })}
 
         {/* Boşluk (AR butonu için) */}
         <View style={{height: 100}} />

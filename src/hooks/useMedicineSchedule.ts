@@ -2,6 +2,8 @@ import {useState, useEffect, useCallback} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MedicineSchedule} from '../types';
 import {MEDICINES} from '../constants/medicines';
+import {scheduleAllNotifications} from '../services/notificationService';
+import {syncSchedule} from '../services/firestoreService';
 
 const STORAGE_KEY = '@medicine_schedule';
 
@@ -42,6 +44,11 @@ export function useMedicineSchedule() {
       setSchedule(newSchedule);
       try {
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newSchedule));
+        // Saat güncellenince alarmları yeniden planla + Firestore'a yaz
+        await Promise.all([
+          scheduleAllNotifications(newSchedule),
+          syncSchedule(newSchedule),
+        ]);
       } catch {
         // Sessizce hata yut
       }

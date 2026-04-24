@@ -26,13 +26,24 @@ const medicineImages: Record<string, any> = {
 interface Props {
   medicine: Medicine;
   times: string[];
+  takenTimesToday: string[];
   onUpdateTimes: (times: string[]) => void;
 }
 
-export function MedicineCard({medicine, times, onUpdateTimes}: Props) {
+export function MedicineCard({
+  medicine,
+  times,
+  takenTimesToday,
+  onUpdateTimes,
+}: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [editTimes, setEditTimes] = useState<string[]>([]);
   const countdown = useCountdown(times);
+
+  const totalToday = times.length;
+  const takenToday = takenTimesToday.length;
+  const allTaken = takenToday >= totalToday;
+  const noneTaken = takenToday === 0;
 
   const cardBg =
     medicine.id === 'neoral' ? Colors.cardNeoral : Colors.cardDeltacortril;
@@ -74,6 +85,44 @@ export function MedicineCard({medicine, times, onUpdateTimes}: Props) {
           hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
           <Icon name="clock-edit-outline" size={28} color={Colors.primary} />
         </TouchableOpacity>
+      </View>
+
+      {/* Bugünkü durum badge */}
+      <View style={styles.todayStatusRow}>
+        <Icon
+          name={
+            allTaken
+              ? 'check-circle'
+              : noneTaken
+              ? 'clock-alert-outline'
+              : 'circle-half-full'
+          }
+          size={16}
+          color={
+            allTaken
+              ? Colors.success
+              : noneTaken
+              ? Colors.textSecondary
+              : Colors.secondary
+          }
+        />
+        <Text
+          style={[
+            styles.todayStatusText,
+            {
+              color: allTaken
+                ? Colors.success
+                : noneTaken
+                ? Colors.textSecondary
+                : Colors.secondary,
+            },
+          ]}>
+          {allTaken
+            ? Strings.home.statusTaken
+            : noneTaken
+            ? Strings.home.statusPending
+            : `${takenToday}/${totalToday} ${Strings.home.statusTaken}`}
+        </Text>
       </View>
 
       {/* Kullanım saatleri */}
@@ -221,11 +270,21 @@ const styles = StyleSheet.create({
   editButton: {
     padding: 8,
   },
+  todayStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  todayStatusText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
   timesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
-    paddingTop: 14,
+    marginTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
   },

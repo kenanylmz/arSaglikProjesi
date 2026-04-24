@@ -133,6 +133,194 @@ Uygulama aç
 
 ---
 
+---
+
+## Tamamlanan Geliştirmeler
+
+### ✅ Faz 1 — İlaç Geçmişi & "İlacı Aldım" Sistemi
+
+**Yeni Dosyalar:**
+- `src/hooks/useMedicineHistory.ts` — AsyncStorage CRUD: doz kayıtları okuma/yazma, son 30 gün tutulur
+- `src/types/index.ts` — `DoseRecord` tipi eklendi: `{ id, medicineId, date, scheduledTime, takenAt, taken }`
+
+**Değişen Dosyalar:**
+- `src/components/ARMedicineScene.tsx` — Bilgi kartı altına **"İlacı Aldım"** butonu eklendi, `onDoseTaken` prop callback
+- `src/screens/ARCameraScreen.tsx` — `useMedicineHistory` bağlandı, `findCurrentDoseTime` ile en yakın doz saati bulunur
+- `src/components/MedicineCard.tsx` — `takenTimesToday` prop: alındı/bekleniyor/kısmi badge gösterimi
+- `src/screens/HomeScreen.tsx` — `useMedicineHistory` ile bugünkü kayıtlar kartlara aktarılır; `useFocusEffect` ile AR kameradan dönünce yenilenir
+- `src/utils/timeUtils.ts` — `findCurrentDoseTime()` ve `getTodayDateStr()` eklendi
+
+**Kayıt ID formatı:** `{medicineId}_{YYYY-MM-DD}_{HHMM}` (örn: `neoral_2024-04-24_0800`)
+
+---
+
+### ✅ Faz 2 — Haftalık Rutinim Ekranı & Alt Menü
+
+**Yeni Dosyalar:**
+- `src/screens/RoutineScreen.tsx` — 7 günlük grid, uyum yüzdesi, özet kart
+- `src/navigation/AppNavigator.tsx` — Stack → BottomTabs (İlaçlarım + Rutinim) + ARCamera modal
+
+**Yeni Paketler:**
+```
+@react-navigation/bottom-tabs
+```
+
+**Dot Renkleri:**
+| Durum | Renk |
+|-------|------|
+| Alındı | Yeşil ✓ |
+| Kaçırıldı (geçti + alınmadı) | Kırmızı ✗ |
+| Bekleniyor (30dk grace süresi) | Turuncu |
+| Gelecek | Gri |
+
+**Navigation Yapısı:**
+```
+RootStack (headerShown: false)
+  ├── MainTabs
+  │     ├── HomeTab → HomeScreen
+  │     └── RoutineTab → RoutineScreen
+  └── ARCamera (slide_from_bottom)
+```
+
+**Type değişikliği:**
+```typescript
+// Eski
+RootStackParamList: { Home, ARCamera }
+// Yeni
+RootStackParamList: { MainTabs, ARCamera }
+TabParamList: { HomeTab, RoutineTab }
+```
+
+---
+
+### ✅ Faz 3 — Alarm / Push Notification Sistemi
+
+**Yeni Dosyalar:**
+- `src/services/notificationService.ts` — `@notifee/react-native` ile günlük tekrarlayan alarmlar
+
+**Yeni Paket:**
+```
+@notifee/react-native
+```
+
+**AndroidManifest.xml'e eklenen izinler:**
+```xml
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+<uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+```
+
+**Kurallar:**
+- Sessiz saatler: **23:00–07:00** arası alarm kurulmaz
+- Saat güncellenince eski alarmlar iptal, yenileri planlanır
+- Bildirim içeriği: `💊 {İlaç Adı} — {Doz}, ilaç alma zamanı!`
+- `useMedicineSchedule.updateTimes` → `scheduleAllNotifications` otomatik tetiklenir
+- `HomeScreen` yüklenince (`loading: false`) stored saatlerle alarmlar planlanır
+
+---
+
+### ✅ Faz 4 — Firebase Firestore & Ebeveyn Kontrolü
+
+**Yeni Dosyalar:**
+- `src/hooks/useUserId.ts` — Cihaza kalıcı `AR-XXXX-XXXX` formatında ID üretir/okur
+- `src/services/firestoreService.ts` — Tüm Firestore işlemleri (schedule sync, doz sync, bakıcı sorgusu)
+- `src/components/CaregiverModal.tsx` — Bottom sheet: ID girerek başka kullanıcının günlük durumunu sorgular
+
+**Yeni Paketler:**
+```
+@react-native-firebase/app
+@react-native-firebase/firestore
+```
+
+**Android Gradle Değişiklikleri:**
+- `android/build.gradle` → `classpath("com.google.gms:google-services:4.4.2")`
+- `android/app/build.gradle` → `apply plugin: "com.google.gms.google-services"`
+
+**Firebase Project:** `arsaglik` (project ID)
+**google-services.json:** `android/app/google-services.json` ✅
+
+**Firestore Şeması:**
+```
+users/
+  {AR-XXXX-XXXX}/
+    createdAt: Timestamp
+    schedule/current/
+      medicines: { neoral: ['08:00','20:00'], deltacortril: ['10:00'] }
+      updatedAt: Timestamp
+    doses/
+      {medicineId_date_HHMM}/
+        medicineId, date, scheduledTime, takenAt, taken
+```
+
+**Firestore Security Rules:**
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+**Sync Mantığı (Local-First):**
+- Uygulama tamamen AsyncStorage'dan çalışır (offline güvenli)
+- Firestore yazmaları arka planda, `catch(() => {})` ile sessiz
+- Saat güncelleme → Firestore schedule güncellenir
+- "İlacı Aldım" → Firestore doz kaydedilir
+- İlk açılış → user doc oluşturulur, schedule aktarılır
+
+**Ebeveyn Kontrolü — RoutineScreen sağ üst kalkan ikonu:**
+- Hedef kullanıcının `AR-XXXX-XXXX` ID'si girilir
+- Firestore'dan o günün schedule + doses verileri çekilir
+- Her ilaç / her saat için alındı/kaçırıldı/bekleniyor gösterilir
+- Alınan dozlarda `HH:MM'de alındı` formatında saat yazılır
+
+---
+
+### ✅ Faz 5 — Uygulama Adı, Logo & APK
+
+**Uygulama Adı:** `Nefes Saati`
+- Değişen dosya: `android/app/src/main/res/values/strings.xml`
+
+**Logo:** AndroidAssetStudio ile üretildi
+- Klasörler: `mipmap-anydpi-v26`, `mipmap-hdpi`, `mipmap-xhdpi`, `mipmap-xxhdpi`, `mipmap-xxxhdpi`
+- `AndroidManifest.xml` → `android:roundIcon` → `@mipmap/ic_launcher` (round versiyonu üretilmediği için)
+
+**Keystore Bilgileri:**
+- Dosya: `android/app/nefes-saati.keystore`
+- Alias: `nefes-saati`
+- Şifre: `gradle.properties`'te `MYAPP_UPLOAD_*` değişkenleri ile saklanır
+- Keytool tam yolu: `"C:/Program Files/Java/jdk-19/bin/keytool.exe"` (PATH'e eklenmemiş)
+
+**Signing Config (`android/app/build.gradle`):**
+```groovy
+signingConfigs {
+    release {
+        storeFile file(MYAPP_UPLOAD_STORE_FILE)
+        storePassword MYAPP_UPLOAD_STORE_PASSWORD
+        keyAlias MYAPP_UPLOAD_KEY_ALIAS
+        keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+    }
+}
+```
+
+**APK Üretme:**
+```powershell
+# Gradle lock hatası alırsa önce Java process'lerini öldür:
+Get-Process -Name "java" -ErrorAction SilentlyContinue | Stop-Process -Force
+
+cd android
+./gradlew clean
+./gradlew assembleRelease
+```
+
+**APK Çıktısı:** `android/app/build/outputs/apk/release/app-release.apk`
+
+---
+
 ## Planlanan Geliştirmeler
 
 ### 🔔 1. Alarm / Push Notification Sistemi

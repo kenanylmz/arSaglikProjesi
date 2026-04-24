@@ -23,7 +23,9 @@ import {Colors} from '../constants/colors';
 import {Strings} from '../constants/strings';
 import {ARMedicineOverlay} from '../components/ARMedicineScene';
 import {useMedicineSchedule} from '../hooks/useMedicineSchedule';
+import {useMedicineHistory} from '../hooks/useMedicineHistory';
 import {stopSpeaking} from '../services/ttsService';
+import {findCurrentDoseTime} from '../utils/timeUtils';
 
 // İlaç tanıma anahtar kelimeleri
 const MEDICINE_KEYWORDS: Record<string, string[]> = {
@@ -53,6 +55,7 @@ function identifyMedicine(recognizedText: string): string | null {
 export function ARCameraScreen() {
   const navigation = useNavigation();
   const {schedule} = useMedicineSchedule();
+  const {loadRecords, logDose} = useMedicineHistory();
   const {hasPermission, requestPermission} = useCameraPermission();
   const device = useCameraDevice('back');
   const cameraRef = useRef<Camera>(null);
@@ -69,6 +72,7 @@ export function ARCameraScreen() {
     if (!hasPermission) {
       requestPermission();
     }
+    loadRecords();
     return () => {
       stopSpeaking();
     };
@@ -217,7 +221,16 @@ export function ARCameraScreen() {
       {/* İlaç tanındıysa overlay göster */}
       {detectedMedicine ? (
         <View style={styles.overlayContainer}>
-          <ARMedicineOverlay medicineId={detectedMedicine} times={schedule} />
+          <ARMedicineOverlay
+            medicineId={detectedMedicine}
+            times={schedule}
+            onDoseTaken={async () => {
+              const medicineTimes =
+                schedule[detectedMedicine] ?? [];
+              const doseTime = findCurrentDoseTime(medicineTimes);
+              return logDose(detectedMedicine, doseTime);
+            }}
+          />
         </View>
       ) : (
         <>

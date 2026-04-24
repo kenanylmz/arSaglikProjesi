@@ -1,5 +1,14 @@
-import React, {useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, Animated, Easing} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+  TouchableOpacity,
+  ToastAndroid,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Colors} from '../constants/colors';
 import {Strings} from '../constants/strings';
 import {MEDICINES} from '../constants/medicines';
@@ -15,9 +24,11 @@ const MODEL_FILES: Record<string, 'ilac1.glb' | 'ilac2.glb'> = {
 interface Props {
   medicineId: string;
   times: Record<string, string[]>;
+  onDoseTaken?: () => Promise<boolean>;
 }
 
-export function ARMedicineOverlay({medicineId, times}: Props) {
+export function ARMedicineOverlay({medicineId, times, onDoseTaken}: Props) {
+  const [doseTaken, setDoseTaken] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
   const cardOpacityAnim = useRef(new Animated.Value(0)).current;
@@ -163,6 +174,40 @@ export function ARMedicineOverlay({medicineId, times}: Props) {
             )}
           </View>
         </View>
+
+        {/* İlacı Aldım butonu */}
+        {onDoseTaken && (
+          <TouchableOpacity
+            style={[
+              styles.takeDoseButton,
+              doseTaken && styles.takeDoseButtonDone,
+            ]}
+            onPress={async () => {
+              if (doseTaken) {
+                return;
+              }
+              const saved = await onDoseTaken();
+              if (saved) {
+                setDoseTaken(true);
+                ToastAndroid.show(Strings.ar.doseSaved, ToastAndroid.SHORT);
+              } else {
+                ToastAndroid.show(
+                  Strings.ar.doseAlreadyTaken,
+                  ToastAndroid.SHORT,
+                );
+              }
+            }}
+            activeOpacity={0.8}>
+            <Icon
+              name={doseTaken ? 'check-circle' : 'pill'}
+              size={22}
+              color="#FFF"
+            />
+            <Text style={styles.takeDoseButtonText}>
+              {doseTaken ? Strings.ar.doseAlreadyTaken : Strings.ar.doseTaken}
+            </Text>
+          </TouchableOpacity>
+        )}
       </Animated.View>
     </View>
   );
@@ -293,5 +338,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: Colors.warning,
+  },
+  takeDoseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 14,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: Colors.success,
+  },
+  takeDoseButtonDone: {
+    backgroundColor: 'rgba(39,174,96,0.4)',
+  },
+  takeDoseButtonText: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFF',
   },
 });
