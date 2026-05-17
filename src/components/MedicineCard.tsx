@@ -21,6 +21,7 @@ import {formatTime24to12} from '../utils/timeUtils';
 const medicineImages: Record<string, any> = {
   neoral: require('../assets/ilac/ilaç 1.png'),
   deltacortril: require('../assets/ilac/ilaç 2.png'),
+  cellcept: require('../assets/ilac/ilaç 3.png'),
 };
 
 interface Props {
@@ -46,7 +47,11 @@ export function MedicineCard({
   const noneTaken = takenToday === 0;
 
   const cardBg =
-    medicine.id === 'neoral' ? Colors.cardNeoral : Colors.cardDeltacortril;
+    medicine.id === 'neoral'
+      ? Colors.cardNeoral
+      : medicine.id === 'cellcept'
+      ? Colors.cardCellcept
+      : Colors.cardDeltacortril;
 
   const openEdit = () => {
     setEditTimes([...times]);

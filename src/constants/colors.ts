@@ -19,6 +19,7 @@ export const Colors = {
 
   cardNeoral: '#FFF8E7',
   cardDeltacortril: '#E8EEF5',
+  cardCellcept: '#E8F5E9',
 
   shadow: '#000000',
   overlay: 'rgba(0,0,0,0.5)',

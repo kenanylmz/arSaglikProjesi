@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Colors} from '../constants/colors';
 import {MEDICINES} from '../constants/medicines';
 import {MedicineSchedule, DoseRecord} from '../types';
-import {fetchUserDayData} from '../services/firestoreService';
+import {fetchUserDayData, fetchUserWeekData} from '../services/firestoreService';
+import {generateAndOpenWeeklyReport} from '../services/pdfReportService';
 import {formatTime24to12} from '../utils/timeUtils';
 
 interface Props {
@@ -30,7 +32,10 @@ function calcStatus(
   medicineId: string,
 ): DoseStatus {
   const taken = doses.some(
-    d => d.medicineId === medicineId && d.scheduledTime === scheduledTime && d.taken,
+    d =>
+      d.medicineId === medicineId &&
+      d.scheduledTime === scheduledTime &&
+      d.taken,
   );
   if (taken) {
     return 'taken';
@@ -55,7 +60,10 @@ function takenAtLabel(
   doses: DoseRecord[],
 ): string | null {
   const rec = doses.find(
-    d => d.medicineId === medicineId && d.scheduledTime === scheduledTime && d.taken,
+    d =>
+      d.medicineId === medicineId &&
+      d.scheduledTime === scheduledTime &&
+      d.taken,
   );
   if (!rec?.takenAt) {
     return null;
@@ -69,6 +77,7 @@ function takenAtLabel(
 export function CaregiverModal({visible, onClose}: Props) {
   const [inputId, setInputId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{
     schedule: MedicineSchedule;
@@ -80,7 +89,7 @@ export function CaregiverModal({visible, onClose}: Props) {
   const handleQuery = async () => {
     const trimmed = inputId.trim().toUpperCase();
     if (trimmed.length < 4) {
-      setError('Geçerli bir kullanıcı ID\'si girin.');
+      setError("Geçerli bir kullanıcı ID'si girin.");
       return;
     }
     setLoading(true);
@@ -91,9 +100,34 @@ export function CaregiverModal({visible, onClose}: Props) {
       const data = await fetchUserDayData(trimmed, today);
       setResult({...data, date: today, queriedId: trimmed});
     } catch (e: any) {
-      setError(e?.message ?? 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.');
+      setError(
+        e?.message ?? 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.',
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!result) {
+      return;
+    }
+    setPdfLoading(true);
+    try {
+      const weekData = await fetchUserWeekData(result.queriedId);
+      await generateAndOpenWeeklyReport({
+        userId: result.queriedId,
+        schedule: weekData.schedule,
+        dosesByDate: weekData.dosesByDate,
+        dates: weekData.dates,
+      });
+    } catch (e: any) {
+      ToastAndroid.show(
+        e?.message ?? 'PDF oluşturulamadı.',
+        ToastAndroid.LONG,
+      );
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -107,8 +141,20 @@ export function CaregiverModal({visible, onClose}: Props) {
   const todayLabel = (() => {
     const d = new Date();
     return `${d.getDate()} ${
-      ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
-       'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'][d.getMonth()]
+      [
+        'Ocak',
+        'Şubat',
+        'Mart',
+        'Nisan',
+        'Mayıs',
+        'Haziran',
+        'Temmuz',
+        'Ağustos',
+        'Eylül',
+        'Ekim',
+        'Kasım',
+        'Aralık',
+      ][d.getMonth()]
     } ${d.getFullYear()}`;
   })();
 
@@ -126,7 +172,9 @@ export function CaregiverModal({visible, onClose}: Props) {
               <Icon name="shield-account" size={24} color={Colors.primary} />
               <Text style={styles.headerTitle}>Ebeveyn / Bakıcı Kontrolü</Text>
             </View>
-            <TouchableOpacity onPress={handleClose} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+            <TouchableOpacity
+              onPress={handleClose}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
               <Icon name="close" size={24} color={Colors.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -166,92 +214,165 @@ export function CaregiverModal({visible, onClose}: Props) {
           {/* Hata */}
           {error && (
             <View style={styles.errorBox}>
-              <Icon name="alert-circle-outline" size={18} color={Colors.warning} />
+              <Icon
+                name="alert-circle-outline"
+                size={18}
+                color={Colors.warning}
+              />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
 
           {/* Sonuçlar */}
           {result && (
-            <ScrollView
-              style={styles.results}
-              showsVerticalScrollIndicator={false}>
-              {/* Tarih + ID */}
-              <View style={styles.resultHeader}>
-                <Text style={styles.resultDate}>{todayLabel}</Text>
-                <Text style={styles.resultId}>ID: {result.queriedId}</Text>
-              </View>
+            <>
+              <ScrollView
+                style={styles.results}
+                showsVerticalScrollIndicator={false}>
+                {/* Tarih + ID */}
+                <View style={styles.resultHeader}>
+                  <Text style={styles.resultDate}>{todayLabel}</Text>
+                  <Text style={styles.resultId}>ID: {result.queriedId}</Text>
+                </View>
 
-              {MEDICINES.map(medicine => {
-                const times = result.schedule[medicine.id] ?? medicine.defaultTimes;
-                return (
-                  <View key={medicine.id} style={styles.medicineBlock}>
-                    {/* İlaç başlığı */}
-                    <View style={styles.medicineHeader}>
-                      <View
-                        style={[
-                          styles.colorBar,
-                          {backgroundColor: medicine.color},
-                        ]}
-                      />
-                      <View>
-                        <Text style={styles.medicineName}>{medicine.name}</Text>
-                        <Text style={styles.medicineSub}>
-                          {medicine.genericName} · {medicine.dosage}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Dozlar */}
-                    {times.map(time => {
-                      const status = calcStatus(
-                        result.date,
-                        time,
-                        result.doses,
-                        medicine.id,
-                      );
-                      const takenAt = takenAtLabel(medicine.id, time, result.doses);
-
-                      return (
-                        <View key={time} style={styles.doseRow}>
-                          <Text style={styles.doseTime}>
-                            {formatTime24to12(time)}
+                {MEDICINES.map(medicine => {
+                  const times =
+                    result.schedule[medicine.id] ?? medicine.defaultTimes;
+                  return (
+                    <View key={medicine.id} style={styles.medicineBlock}>
+                      {/* İlaç başlığı */}
+                      <View style={styles.medicineHeader}>
+                        <View
+                          style={[
+                            styles.colorBar,
+                            {backgroundColor: medicine.color},
+                          ]}
+                        />
+                        <View style={styles.medicineInfo}>
+                          <Text style={styles.medicineName}>
+                            {medicine.name}
                           </Text>
-                          <View style={styles.doseRight}>
-                            {status === 'taken' && (
-                              <View style={[styles.statusBadge, styles.badgeTaken]}>
-                                <Icon name="check-circle" size={14} color={Colors.success} />
-                                <Text style={[styles.statusText, {color: Colors.success}]}>
-                                  {takenAt ?? 'Alındı'}
-                                </Text>
-                              </View>
-                            )}
-                            {status === 'missed' && (
-                              <View style={[styles.statusBadge, styles.badgeMissed]}>
-                                <Icon name="close-circle" size={14} color={Colors.warning} />
-                                <Text style={[styles.statusText, {color: Colors.warning}]}>
-                                  Kaçırıldı
-                                </Text>
-                              </View>
-                            )}
-                            {status === 'pending' && (
-                              <View style={[styles.statusBadge, styles.badgePending]}>
-                                <Icon name="clock-outline" size={14} color={Colors.secondary} />
-                                <Text style={[styles.statusText, {color: Colors.secondary}]}>
-                                  Bekleniyor
-                                </Text>
-                              </View>
-                            )}
-                          </View>
+                          <Text style={styles.medicineSub}>
+                            {medicine.genericName} · {medicine.dosage}
+                          </Text>
                         </View>
-                      );
-                    })}
-                  </View>
-                );
-              })}
+                      </View>
 
-              <View style={{height: 16}} />
-            </ScrollView>
+                      {/* Dozlar */}
+                      {times.map(time => {
+                        const status = calcStatus(
+                          result.date,
+                          time,
+                          result.doses,
+                          medicine.id,
+                        );
+                        const takenAt = takenAtLabel(
+                          medicine.id,
+                          time,
+                          result.doses,
+                        );
+
+                        return (
+                          <View key={time} style={styles.doseRow}>
+                            <Text style={styles.doseTime}>
+                              {formatTime24to12(time)}
+                            </Text>
+                            <View style={styles.doseRight}>
+                              {status === 'taken' && (
+                                <View
+                                  style={[
+                                    styles.statusBadge,
+                                    styles.badgeTaken,
+                                  ]}>
+                                  <Icon
+                                    name="check-circle"
+                                    size={14}
+                                    color={Colors.success}
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.statusText,
+                                      {color: Colors.success},
+                                    ]}>
+                                    {takenAt ?? 'Alındı'}
+                                  </Text>
+                                </View>
+                              )}
+                              {status === 'missed' && (
+                                <View
+                                  style={[
+                                    styles.statusBadge,
+                                    styles.badgeMissed,
+                                  ]}>
+                                  <Icon
+                                    name="close-circle"
+                                    size={14}
+                                    color={Colors.warning}
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.statusText,
+                                      {color: Colors.warning},
+                                    ]}>
+                                    Kaçırıldı
+                                  </Text>
+                                </View>
+                              )}
+                              {status === 'pending' && (
+                                <View
+                                  style={[
+                                    styles.statusBadge,
+                                    styles.badgePending,
+                                  ]}>
+                                  <Icon
+                                    name="clock-outline"
+                                    size={14}
+                                    color={Colors.secondary}
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.statusText,
+                                      {color: Colors.secondary},
+                                    ]}>
+                                    Bekleniyor
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+                })}
+
+                <View style={{height: 8}} />
+              </ScrollView>
+
+              {/* PDF İndir Butonu */}
+              <TouchableOpacity
+                style={[
+                  styles.pdfButton,
+                  pdfLoading && styles.pdfButtonDisabled,
+                ]}
+                onPress={handleDownloadPdf}
+                disabled={pdfLoading}
+                activeOpacity={0.8}>
+                {pdfLoading ? (
+                  <>
+                    <ActivityIndicator size="small" color="#FFF" />
+                    <Text style={styles.pdfButtonText}>Rapor Hazırlanıyor...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="file-pdf-box" size={22} color="#FFF" />
+                    <Text style={styles.pdfButtonText}>
+                      Haftalık Raporu İndir (PDF)
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </View>
@@ -270,7 +391,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 24,
-    maxHeight: '88%',
+    maxHeight: '90%',
   },
   header: {
     flexDirection: 'row',
@@ -343,6 +464,7 @@ const styles = StyleSheet.create({
   },
   results: {
     marginTop: 8,
+    maxHeight: 380,
   },
   resultHeader: {
     flexDirection: 'row',
@@ -382,6 +504,9 @@ const styles = StyleSheet.create({
     width: 4,
     height: 34,
     borderRadius: 2,
+  },
+  medicineInfo: {
+    flex: 1,
   },
   medicineName: {
     fontSize: 15,
@@ -430,5 +555,29 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 13,
     fontWeight: '700',
+  },
+  // PDF Butonu
+  pdfButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 14,
+    paddingVertical: 15,
+    borderRadius: 16,
+    backgroundColor: '#1565C0',
+    elevation: 3,
+    shadowColor: '#1565C0',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  pdfButtonDisabled: {
+    opacity: 0.65,
+  },
+  pdfButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFF',
   },
 });

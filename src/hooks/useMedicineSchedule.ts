@@ -29,7 +29,11 @@ export function useMedicineSchedule() {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setSchedule(JSON.parse(stored));
+        const parsed: MedicineSchedule = JSON.parse(stored);
+        // Yeni eklenen ilaçlar için default saatleri merge et
+        const defaults = getDefaultSchedule();
+        const merged: MedicineSchedule = {...defaults, ...parsed};
+        setSchedule(merged);
       }
     } catch {
       // Varsayılan saatlerle devam et

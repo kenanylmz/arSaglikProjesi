@@ -115,3 +115,54 @@ export async function fetchUserDayData(
 
   return {schedule, doses};
 }
+
+// ─── Haftalık Rapor Sorgusu ──────────────────────────────────────────────────
+
+export interface CaregiverWeekData {
+  schedule: MedicineSchedule;
+  dosesByDate: Record<string, DoseRecord[]>;
+  dates: string[];
+}
+
+export async function fetchUserWeekData(
+  targetUserId: string,
+): Promise<CaregiverWeekData> {
+  const dates: string[] = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
+
+  const [scheduleSnap, dosesSnap] = await Promise.all([
+    usersCol().doc(targetUserId).collection('schedule').doc('current').get(),
+    usersCol()
+      .doc(targetUserId)
+      .collection('doses')
+      .where('date', '>=', dates[0])
+      .where('date', '<=', dates[dates.length - 1])
+      .get(),
+  ]);
+
+  if (!scheduleSnap.exists) {
+    throw new Error('Kullanıcı bulunamadı.');
+  }
+
+  const rawSchedule = scheduleSnap.data()?.medicines ?? null;
+  const schedule: MedicineSchedule = rawSchedule ?? (() => {
+    const def: MedicineSchedule = {};
+    MEDICINES.forEach(m => {
+      def[m.id] = [...m.defaultTimes];
+    });
+    return def;
+  })();
+
+  const allDoses = dosesSnap.docs.map(d => d.data() as DoseRecord);
+  const dosesByDate: Record<string, DoseRecord[]> = {};
+  dates.forEach(date => {
+    dosesByDate[date] = allDoses.filter(d => d.date === date);
+  });
+
+  return {schedule, dosesByDate, dates};
+}

@@ -16,9 +16,10 @@ import {getNextDoseInfo, formatTime24to12} from '../utils/timeUtils';
 import {speak} from '../services/ttsService';
 import {Model3DViewer} from './Model3DViewer';
 
-const MODEL_FILES: Record<string, 'ilac1.glb' | 'ilac2.glb'> = {
+const MODEL_FILES: Record<string, 'ilac1.glb' | 'ilac2.glb' | 'ilac3.glb'> = {
   neoral: 'ilac1.glb',
   deltacortril: 'ilac2.glb',
+  cellcept: 'ilac3.glb',
 };
 
 interface Props {

@@ -37,6 +37,14 @@ const MEDICINE_KEYWORDS: Record<string, string[]> = {
     'pfizer',
     'enteric',
   ],
+  cellcept: [
+    'cellcept',
+    'mycophenolate',
+    'mycophenolic',
+    'mofetil',
+    'roche',
+    'mmc',
+  ],
 };
 
 function identifyMedicine(recognizedText: string): string | null {

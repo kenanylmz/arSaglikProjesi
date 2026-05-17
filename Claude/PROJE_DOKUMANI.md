@@ -8,6 +8,7 @@ Karaciğer nakli sonrası yaşlı hastaların ilaçlarını kameraya tutarak tan
 |----|----------|-------------|-----|------|
 | `neoral` | Sandimmun Neoral | Ciclosporin | 100 mg | 08:00 / 20:00 |
 | `deltacortril` | Deltacortril | Prednisolone | 5 mg | 10:00 |
+| `cellcept` | CellCept | Mycophenolate Mofetil | 500 mg | 08:00 / 20:00 |
 
 ## Teknoloji Stack
 - React Native CLI 0.83.4 (Android only)
@@ -318,6 +319,97 @@ cd android
 ```
 
 **APK Çıktısı:** `android/app/build/outputs/apk/release/app-release.apk`
+
+---
+
+### ✅ Faz 6 — 3. İlaç (CellCept) & Bakıcı PDF Raporu
+
+#### 6A — CellCept İlacı Eklendi
+
+**Yeni İlaç:**
+| ID | İlaç Adı | Etken Madde | Doz | Üretici | Saat | Renk |
+|----|----------|-------------|-----|---------|------|------|
+| `cellcept` | CellCept | Mycophenolate Mofetil | 500 mg | Roche | 08:00 / 20:00 | `#2E7D32` |
+
+**Varlıklar:**
+- Görsel: `src/assets/ilac/ilaç 3.png`
+- 3D Model: `src/assets/3D Model/ilaç 3.glb` → kopyalandı: `android/app/src/main/assets/models/ilac3.glb`
+
+**Değişen Dosyalar:**
+- `src/constants/medicines.ts` — `MEDICINES` dizisine CellCept nesnesi eklendi
+- `src/constants/colors.ts` — `cardCellcept: '#E8F5E9'` (açık yeşil kart arka planı) eklendi
+- `src/components/MedicineCard.tsx` — `medicineImages` kaydına `cellcept: require('../assets/ilac/ilaç 3.png')` eklendi; `cardBg` mantığına `cellcept → Colors.cardCellcept` eklendi
+- `src/components/Model3DViewer.tsx` — `modelFile` prop tipine `'ilac3.glb'` eklendi
+- `src/components/ARMedicineScene.tsx` — `MODEL_FILES` kaydına `cellcept: 'ilac3.glb'` eklendi
+- `src/screens/ARCameraScreen.tsx` — `MEDICINE_KEYWORDS`'e CellCept anahtar kelimeleri eklendi: `['cellcept', 'mycophenolate', 'mycophenolic', 'mofetil', 'roche', 'mmc']`
+- `src/hooks/useMedicineSchedule.ts` — `loadSchedule`'da stored schedule ile default schedule merge edilir (`{...defaults, ...parsed}`); böylece sonradan eklenen ilaçlar eski cihazlarda boş saatsiz kalmaz
+
+**Otomatik kapsanan yerler (kod değişikliği gerekmedi):**
+- HomeScreen → `MEDICINES.map()` ile 3. kart otomatik görünür
+- RoutineScreen → `MEDICINES.map()` ile CellCept satırı otomatik görünür
+- Bakıcı modalı → `MEDICINES.map()` ile 3. ilaç otomatik listelenir
+- Firestore doz sync → `logDose()` herhangi bir `medicineId` için çalışır
+- Bildirimler → `scheduleAllNotifications` tüm ilaçları döner
+- PDF raporu → `MEDICINES.forEach()` ile 3 ilaç tablosu otomatik oluşur
+
+---
+
+#### 6B — Bakıcı Modalı: Haftalık PDF Raporu
+
+**Yeni Dosya:**
+- `src/services/pdfReportService.ts` — HTML şablon oluşturma + PDF dönüştürme + otomatik açma
+
+**Yeni Paketler:**
+```
+react-native-html-to-pdf
+react-native-blob-util
+```
+
+**`AndroidManifest.xml`'e eklenen izinler:**
+```xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+```
+
+**Değişen Dosyalar:**
+- `src/services/firestoreService.ts` — `fetchUserWeekData(targetUserId)` fonksiyonu eklendi: son 7 günün schedule + doses verilerini Firestore'dan paralel çeker, `dosesByDate` map olarak döner
+- `src/components/CaregiverModal.tsx` — Sorgulama sonucu gösterildikten sonra **"Haftalık Raporu İndir (PDF)"** butonu eklendi; tıklanınca `fetchUserWeekData` → `generateAndOpenWeeklyReport` zinciri çalışır
+
+**PDF İçeriği:**
+```
+Nefes Saati — Haftalık İlaç Takip Raporu
+├── Rapor başlığı: Hasta ID, dönem (7 gün), rapor tarihi
+├── Haftalık özet kutusu
+│     ├── Genel uyum yüzdesi (renk kodlu: yeşil/turuncu/kırmızı)
+│     ├── Alınan doz sayısı
+│     ├── Kaçırılan doz sayısı
+│     └── Toplam doz sayısı
+├── Her ilaç için ayrı tablo (3 ilaç × 7 gün)
+│     ├── İlaç adı, etken madde, doz, üretici, açıklama
+│     ├── İlaca özgü uyum yüzdesi
+│     └── Saat × Gün grid tablosu
+│           ├── Alındı → yeşil hücre + tam saat (ör: 08:05 / alındı)
+│           ├── Alınmadı → kırmızı hücre + ✗ alınmadı
+│           └── Gelecek/Bekliyor → gri hücre + —
+└── Kaçırılan dozlar detay listesi (varsa)
+```
+
+**PDF Akışı:**
+```
+Sorgula butonu → fetchUserDayData (bugün görünümü)
+PDF butonu    → fetchUserWeekData (7 gün)
+               → generateAndOpenWeeklyReport()
+                    ├── buildHtml() — istatistik hesaplama + HTML şablon
+                    ├── generatePDF() — react-native-html-to-pdf ile PDF üret
+                    │    Çıktı: Downloads/nefes_saati_{userId}_{tarih}.pdf
+                    └── RNFetchBlob.android.actionViewIntent() — PDF otomatik açılır
+```
+
+**Doz Durumu Hesaplama Kuralları (PDF için):**
+- Geçmiş gün + alınmadı → `missed`
+- Bugün + 30dk grace süresi geçti + alınmadı → `missed`
+- Henüz gelmemiş / grace süresi içinde → `pending` (tabloda sayılmaz)
+- `taken` + `missed` dozlar toplam uyum hesabına dahil edilir; `pending` dahil edilmez
 
 ---
 

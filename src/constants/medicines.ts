@@ -23,4 +23,15 @@ export const MEDICINES: Medicine[] = [
     description:
       'Kortikosteroid. Karaciğer nakli sonrası iltihaplanmayı azaltmak ve bağışıklık yanıtını düzenlemek için kullanılır.',
   },
+  {
+    id: 'cellcept',
+    name: 'CellCept',
+    genericName: 'Mycophenolate Mofetil',
+    dosage: '500 mg',
+    manufacturer: 'Roche',
+    defaultTimes: ['08:00', '20:00'],
+    color: '#2E7D32',
+    description:
+      'Bağışıklık sistemi baskılayıcı. Karaciğer nakli sonrası organ reddini önlemek için Neoral ile birlikte kullanılır.',
+  },
 ];

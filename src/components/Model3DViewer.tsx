@@ -3,7 +3,7 @@ import {StyleSheet, View, PanResponder} from 'react-native';
 import WebView from 'react-native-webview';
 
 interface Props {
-  modelFile: 'ilac1.glb' | 'ilac2.glb';
+  modelFile: 'ilac1.glb' | 'ilac2.glb' | 'ilac3.glb';
   size?: number;
 }
 
