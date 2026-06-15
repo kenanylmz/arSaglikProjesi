@@ -1,5 +1,18 @@
 # Nefes Saati – AR Destekli Akıllı İlaç Takip ve Hatırlatma Sistemi
 
+> **Öğrenci:** Kenan Yılmaz — **210542011** | Fırat Üniversitesi
+
+---
+
+## Hızlı Bağlantılar
+
+| | Bağlantı |
+|---|---|
+| **APK İndir (Google Drive)** | https://drive.google.com/file/d/1CXesFagCGachgjlGJbZdvLIetwrlYjiq/view?usp=sharing |
+| **Trello Board** | https://trello.com/b/VMDGjSvk |
+| **GitHub Repo** | https://github.com/kenanylmz/arSaglikProjesi |
+| **Demo Video** | `Demo_video.mp4` (proje kök dizininde) |
+
 ---
 
 ## 1. Proje Başlığı
@@ -107,7 +120,7 @@ Kronik hastalık yönetiminde ilaç uyumu kritik bir sağlık göstergesidir. Me
 
 ## 8. Beklenen Çıktılar
 
-- **Çalışan Android APK** — İmzalı, cihaza yüklenebilir sürüm (`app-release.apk`)
+- **Çalışan Android APK** — İmzalı, cihaza yüklenebilir sürüm — [Google Drive'dan İndir](https://drive.google.com/file/d/1CXesFagCGachgjlGJbZdvLIetwrlYjiq/view?usp=sharing)
 - **AR İlaç Tanıma Modülü** — Kamera üzerinden OCR ile otomatik ilaç adı ve bilgi çıkarımı
 - **Haftalık Rutin Ekranı** — 7 günlük ilaç uyum ızgarası; alınan (yeşil), kaçırılan (kırmızı), beklenen (turuncu), gelecek (gri) göstergeli
 - **Bakıcı İzleme Paneli** — Uzaktan erişim için AR-XXXX-XXXX kodlu modal ekran
